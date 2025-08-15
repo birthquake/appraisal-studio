@@ -9,11 +9,13 @@ function App() {
     bedrooms: '',
     bathrooms: '',
     sqft: '',
-    features: ''
+    features: '',
+    propertyType: 'Single Family Home'
   });
   
   const [generatedDescription, setGeneratedDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -24,17 +26,51 @@ function App() {
     }));
   };
 
-  // Generate property description (placeholder for now)
+  // Generate property description using our secure API
   const generateDescription = async () => {
     setIsGenerating(true);
+    setError('');
     
-    // Simulate API call for now - we'll add real AI later
-    setTimeout(() => {
-      const mockDescription = `Beautiful ${propertyData.bedrooms} bedroom, ${propertyData.bathrooms} bathroom home located at ${propertyData.address}. This stunning ${propertyData.sqft} square foot property features ${propertyData.features} and is priced at $${propertyData.price}. Perfect for families looking for comfort and style in a desirable neighborhood.`;
+    try {
+      const response = await fetch('/api/generate-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          propertyData: propertyData
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       
-      setGeneratedDescription(mockDescription);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setGeneratedDescription(data.description);
+      
+    } catch (err) {
+      console.error('API Error:', err);
+      setError('Failed to generate description. Please try again.');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
+  };
+
+  // Copy to clipboard function
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedDescription);
+      // Could add a toast notification here later
+      alert('Copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   return (
@@ -65,15 +101,33 @@ function App() {
               />
             </div>
 
-            <div className="form-group">
-              <label>Price</label>
-              <input
-                type="text"
-                name="price"
-                value={propertyData.price}
-                onChange={handleInputChange}
-                placeholder="450,000"
-              />
+            <div className="form-row">
+              <div className="form-group">
+                <label>Property Type</label>
+                <select
+                  name="propertyType"
+                  value={propertyData.propertyType}
+                  onChange={handleInputChange}
+                >
+                  <option value="Single Family Home">Single Family Home</option>
+                  <option value="Condo">Condo</option>
+                  <option value="Townhouse">Townhouse</option>
+                  <option value="Multi-Family">Multi-Family</option>
+                  <option value="Land">Land</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>Price</label>
+                <input
+                  type="text"
+                  name="price"
+                  value={propertyData.price}
+                  onChange={handleInputChange}
+                  placeholder="450,000"
+                />
+              </div>
             </div>
 
             <div className="form-row">
@@ -117,7 +171,7 @@ function App() {
                 name="features"
                 value={propertyData.features}
                 onChange={handleInputChange}
-                placeholder="Updated kitchen, hardwood floors, large backyard, garage..."
+                placeholder="Updated kitchen, hardwood floors, large backyard, garage, master suite, etc."
                 rows="3"
               />
             </div>
@@ -125,19 +179,27 @@ function App() {
             <button 
               className="generate-btn"
               onClick={generateDescription}
-              disabled={isGenerating || !propertyData.address}
+              disabled={isGenerating || !propertyData.address || !propertyData.price}
             >
-              {isGenerating ? 'Generating...' : 'Generate Description'}
+              {isGenerating ? 'Generating with AI...' : 'Generate Description'}
             </button>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
           </div>
 
           {/* Generated Content */}
           {generatedDescription && (
             <div className="result-section">
-              <h3>Generated Property Description</h3>
+              <h3>AI-Generated Property Description</h3>
               <div className="generated-content">
                 <p>{generatedDescription}</p>
-                <button className="copy-btn">Copy to Clipboard</button>
+                <button className="copy-btn" onClick={copyToClipboard}>
+                  Copy to Clipboard
+                </button>
               </div>
             </div>
           )}
