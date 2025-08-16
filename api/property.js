@@ -1,3 +1,9 @@
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -5,12 +11,58 @@ export default async function handler(req, res) {
 
   try {
     const { propertyData } = req.body;
+
+    // Validate required fields
+    if (!propertyData.address || !propertyData.price) {
+      return res.status(400).json({ error: 'Address and price are required' });
+    }
+
+    // Create the prompt
+    const prompt = `Write a compelling property description for a real estate listing with the following details:
+
+Address: ${propertyData.address}
+Property Type: ${propertyData.propertyType}
+Price: $${propertyData.price}
+Bedrooms: ${propertyData.bedrooms}
+Bathrooms: ${propertyData.bathrooms}
+Square Footage: ${propertyData.sqft} sq ft
+Key Features: ${propertyData.features}
+
+Instructions:
+- Write in an engaging, professional tone that appeals to potential buyers
+- Highlight the most attractive features and benefits
+- Include lifestyle benefits and neighborhood appeal
+- Keep it between 100-150 words
+- Use real estate industry language
+- Make it compelling and sales-focused
+- Don't use overly flowery language - keep it professional yet appealing`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional real estate copywriter who creates compelling property descriptions that help properties sell faster. You understand buyer psychology and know how to highlight features that matter most."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_tokens: 250,
+      temperature: 0.7,
+    });
+
+    const description = completion.choices[0].message.content.trim();
     
-    const mockDescription = `This is working! Property at ${propertyData.address} with ${propertyData.bedrooms} bedrooms.`;
-    
-    res.status(200).json({ description: mockDescription });
+    res.status(200).json({ description });
 
   } catch (error) {
-    res.status(500).json({ error: 'Failed to generate description' });
+    console.error('OpenAI API Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate description',
+      details: error.message,
+      hasApiKey: !!process.env.OPENAI_API_KEY
+    });
   }
 }
