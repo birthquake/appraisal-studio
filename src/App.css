@@ -1,59 +1,98 @@
+/* Enhanced App.css with Optional Fields Styling */
+
+/* Base styles (keeping your existing design) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
 .App {
   min-height: 100vh;
 }
 
-/* Header Styling */
+/* Header */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 60px 0;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .logo {
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -1px;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
 }
 
 .tagline {
-  font-size: 1.2rem;
-  margin: 10px 0 0 0;
-  opacity: 0.9;
-  font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
 }
 
 /* Main Content */
+main {
+  padding: 2rem 0;
+}
+
 .generator-section {
   background: white;
-  border-radius: 12px;
-  padding: 40px;
-  margin: -30px auto 40px auto;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
-  position: relative;
-  z-index: 1;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .generator-section h2 {
   color: #2d3748;
-  font-size: 2rem;
-  margin-bottom: 30px;
-  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+/* Section Headers */
+.section-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.section-header h3 {
+  color: #2d3748;
+  font-size: 1.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.section-subtitle {
+  color: #718096;
+  font-size: 0.9rem;
 }
 
 /* Form Styling */
 .form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
 }
 
 .form-group {
@@ -62,22 +101,24 @@
 }
 
 .form-group label {
-  font-weight: 600;
   color: #4a5568;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
-  padding: 12px;
+  padding: 0.75rem;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: all 0.3s ease;
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: #667eea;
@@ -86,111 +127,236 @@
 
 .form-group textarea {
   resize: vertical;
-  font-family: inherit;
+  min-height: 80px;
+}
+
+/* Optional Fields Toggle */
+.optional-toggle {
+  margin: 2rem 0 1rem 0;
+}
+
+.toggle-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+}
+
+.toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+.toggle-subtitle {
+  font-weight: normal;
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin-left: auto;
+}
+
+/* Optional Section */
+.optional-section {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+  margin: 1rem 0 1.5rem 0;
+}
+
+/* Checkbox Grid for Special Features */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-item:hover {
+  background-color: #f7fafc;
+}
+
+.checkbox-item input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e0;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.checkbox-item input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Generate Button */
 .generate-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
   border: none;
-  padding: 15px 30px;
+  padding: 1rem 2rem;
+  border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 600;
-  border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  margin-top: 10px;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
 }
 
 .generate-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);
 }
 
 .generate-btn:disabled {
-  opacity: 0.6;
+  background: #cbd5e0;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
+}
+
+/* Error Message */
+.error-message {
+  background: #fed7d7;
+  color: #c53030;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
 }
 
 /* Results Section */
 .result-section {
-  margin-top: 40px;
-  padding-top: 30px;
+  margin-top: 2rem;
+  padding-top: 2rem;
   border-top: 2px solid #e2e8f0;
 }
 
 .result-section h3 {
   color: #2d3748;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
 }
 
 .generated-content {
   background: #f7fafc;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #e2e8f0;
   border-radius: 8px;
-  padding: 25px;
-  position: relative;
+  padding: 1.5rem;
 }
 
 .generated-content p {
+  color: #2d3748;
   line-height: 1.6;
-  color: #4a5568;
-  margin: 0 0 20px 0;
-  font-size: 1.05rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.result-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .copy-btn {
-  background: #48bb78;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 0.75rem 1.5rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .copy-btn:hover {
-  background: #38a169;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.word-count {
+  color: #718096;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    padding: 15px;
-  }
-  
-  .logo {
-    font-size: 2.5rem;
+    padding: 0 0.5rem;
   }
   
   .generator-section {
-    padding: 25px;
-    margin: -20px 15px 20px 15px;
+    padding: 1.5rem;
   }
   
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-  
-  .app-header {
-    padding: 40px 0;
-  }
-}
-
-@media (max-width: 480px) {
   .logo {
     font-size: 2rem;
   }
   
-  .tagline {
-    font-size: 1rem;
+  .form-row {
+    grid-template-columns: 1fr;
   }
   
-  .generator-section h2 {
-    font-size: 1.5rem;
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .toggle-subtitle {
+    display: none;
+  }
+  
+  .result-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
