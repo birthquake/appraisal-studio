@@ -32,7 +32,7 @@ function App() {
     setError('');
     
     try {
-      const response = await fetch('/api/test', {
+      const response = await fetch('/api/generate-description', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
