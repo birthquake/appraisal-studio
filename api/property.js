@@ -18,24 +18,29 @@ export default async function handler(req, res) {
     }
 
     // Create the prompt
-    const prompt = `Write a compelling property description for a real estate listing with the following details:
+    const prompt = `Write a factual property description for a real estate listing with the following details:
 
 Address: ${propertyData.address}
 Property Type: ${propertyData.propertyType}
-Price: $${propertyData.price}
+Price: ${propertyData.price}
 Bedrooms: ${propertyData.bedrooms}
 Bathrooms: ${propertyData.bathrooms}
 Square Footage: ${propertyData.sqft} sq ft
 Key Features: ${propertyData.features}
 
 Instructions:
-- Write in an engaging, professional tone that appeals to potential buyers
-- Highlight the most attractive features and benefits
-- Include lifestyle benefits and neighborhood appeal
-- Keep it between 100-150 words
-- Use real estate industry language
-- Make it compelling and sales-focused
-- Don't use overly flowery language - keep it professional yet appealing`;
+IMPORTANT: Only use the information provided above. Do not make assumptions about:
+- Property condition (don't say "stunning," "beautiful," etc. unless specified)
+- Neighborhood characteristics (don't mention shopping, schools, etc. unless specified)
+- Features not explicitly listed (don't assume amenities)
+- Subjective descriptions (avoid "spacious," "cozy," etc. without context)
+
+Write in a professional, factual tone that:
+- States the facts clearly
+- Highlights only the features actually provided
+- Uses neutral, accurate language
+- Keeps description between 100-150 words
+- Focuses on the measurable details provided`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
