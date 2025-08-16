@@ -1,6 +1,6 @@
-/* Enhanced App.css with Optional Fields Styling */
+/* Enhanced App.css for Multi-Content Types */
 
-/* Base styles (keeping your existing design) */
+/* Base styles */
 * {
   margin: 0;
   padding: 0;
@@ -30,7 +30,7 @@ body {
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -63,6 +63,96 @@ main {
   color: #2d3748;
   margin-bottom: 1.5rem;
   font-size: 1.8rem;
+  text-align: center;
+}
+
+/* Content Type Selection */
+.content-type-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.content-type-section h3 {
+  color: #2d3748;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.content-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.content-type-card {
+  background: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.content-type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e0;
+}
+
+.content-type-card.selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.3);
+}
+
+.content-type-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.content-type-info h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.content-type-info p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.content-type-card.selected .content-type-info p {
+  opacity: 0.9;
+}
+
+/* Selected Content Type Display */
+.selected-content-type {
+  margin-bottom: 1.5rem;
+}
+
+.selected-type-badge {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+}
+
+.selected-icon {
+  font-size: 1.2rem;
 }
 
 /* Section Headers */
@@ -242,7 +332,7 @@ main {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
   border: none;
-  padding: 1rem 2rem;
+  padding: 1.25rem 2rem;
   border-radius: 8px;
   font-size: 1.1rem;
   font-weight: 600;
@@ -283,20 +373,40 @@ main {
   color: #2d3748;
   margin-bottom: 1rem;
   font-size: 1.4rem;
+  text-align: center;
 }
 
 .generated-content {
   background: #f7fafc;
   border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
 }
 
-.generated-content p {
-  color: #2d3748;
-  line-height: 1.6;
+.content-preview {
+  margin-bottom: 1.5rem;
+}
+
+.content-type-label {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
   margin-bottom: 1rem;
-  font-size: 1rem;
+}
+
+.content-preview p {
+  color: #2d3748;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .result-actions {
@@ -305,6 +415,8 @@ main {
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
 }
 
 .copy-btn {
@@ -323,15 +435,26 @@ main {
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
-.word-count {
+.content-stats {
+  display: flex;
+  gap: 1rem;
   color: #718096;
   font-size: 0.9rem;
   font-weight: 500;
 }
 
+.word-count,
+.char-count {
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
+    max-width: 100%;
     padding: 0 0.5rem;
   }
   
@@ -341,6 +464,16 @@ main {
   
   .logo {
     font-size: 2rem;
+  }
+  
+  .content-type-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .content-type-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
   }
   
   .form-row {
@@ -359,4 +492,24 @@ main {
     flex-direction: column;
     align-items: stretch;
   }
+  
+  .content-stats {
+    justify-content: center;
+  }
+}
+
+/* Enhanced animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.generated-content {
+  animation: fadeInUp 0.5s ease-out;
 }
