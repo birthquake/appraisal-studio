@@ -60,6 +60,12 @@ Instructions:
 
   } catch (error) {
     console.error('OpenAI API Error:', error);
-    res.status(500).json({ error: 'Failed to generate description' });
+    console.error('Error details:', error.message);
+    console.error('API Key exists:', !!process.env.OPENAI_API_KEY);
+    res.status(500).json({ 
+      error: 'Failed to generate description',
+      details: error.message,
+      hasApiKey: !!process.env.OPENAI_API_KEY
+    });
   }
 }
