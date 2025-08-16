@@ -4,18 +4,42 @@ import './App.css';
 function App() {
   // State for our property description form
   const [propertyData, setPropertyData] = useState({
+    // Required fields
     address: '',
     price: '',
     bedrooms: '',
     bathrooms: '',
     sqft: '',
     features: '',
-    propertyType: 'Single Family Home'
+    propertyType: 'Single Family Home',
+    
+    // Optional fields
+    yearBuilt: '',
+    parking: '',
+    condition: '',
+    lotSize: '',
+    neighborhood: '',
+    schoolDistrict: '',
+    specialFeatures: {
+      pool: false,
+      fireplace: false,
+      hardwoodFloors: false,
+      updatedKitchen: false,
+      masterSuite: false,
+      walkInCloset: false,
+      centralAir: false,
+      newAppliances: false,
+      fencedYard: false,
+      deck: false,
+      basement: false,
+      attic: false
+    }
   });
   
   const [generatedDescription, setGeneratedDescription] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -23,6 +47,17 @@ function App() {
     setPropertyData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  // Handle checkbox changes for special features
+  const handleFeatureChange = (featureName) => {
+    setPropertyData(prev => ({
+      ...prev,
+      specialFeatures: {
+        ...prev.specialFeatures,
+        [featureName]: !prev.specialFeatures[featureName]
+      }
     }));
   };
 
@@ -73,6 +108,16 @@ function App() {
     }
   };
 
+  // Get selected special features as an array
+  const getSelectedFeatures = () => {
+    return Object.entries(propertyData.specialFeatures)
+      .filter(([key, value]) => value)
+      .map(([key, value]) => {
+        // Convert camelCase to readable text
+        return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+      });
+  };
+
   return (
     <div className="App">
       {/* Header */}
@@ -90,8 +135,14 @@ function App() {
           
           {/* Property Input Form */}
           <div className="form-grid">
+            {/* Required Fields Section */}
+            <div className="section-header">
+              <h3>Basic Property Information</h3>
+              <p className="section-subtitle">Required fields to generate your description</p>
+            </div>
+
             <div className="form-group">
-              <label>Property Address</label>
+              <label>Property Address *</label>
               <input
                 type="text"
                 name="address"
@@ -103,7 +154,7 @@ function App() {
 
             <div className="form-row">
               <div className="form-group">
-                <label>Property Type</label>
+                <label>Property Type *</label>
                 <select
                   name="propertyType"
                   value={propertyData.propertyType}
@@ -119,7 +170,7 @@ function App() {
               </div>
 
               <div className="form-group">
-                <label>Price</label>
+                <label>Price *</label>
                 <input
                   type="text"
                   name="price"
@@ -176,6 +227,128 @@ function App() {
               />
             </div>
 
+            {/* Optional Fields Toggle */}
+            <div className="optional-toggle">
+              <button
+                type="button"
+                className="toggle-btn"
+                onClick={() => setShowOptionalFields(!showOptionalFields)}
+              >
+                {showOptionalFields ? '▼' : '▶'} Optional Details 
+                <span className="toggle-subtitle">
+                  ({showOptionalFields ? 'Hide' : 'Show'} additional fields for richer descriptions)
+                </span>
+              </button>
+            </div>
+
+            {/* Optional Fields Section */}
+            {showOptionalFields && (
+              <div className="optional-section">
+                <div className="section-divider"></div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Year Built</label>
+                    <input
+                      type="number"
+                      name="yearBuilt"
+                      value={propertyData.yearBuilt}
+                      onChange={handleInputChange}
+                      placeholder="2020"
+                      min="1800"
+                      max={new Date().getFullYear()}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Parking</label>
+                    <select
+                      name="parking"
+                      value={propertyData.parking}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select parking type</option>
+                      <option value="Attached Garage">Attached Garage</option>
+                      <option value="Detached Garage">Detached Garage</option>
+                      <option value="Carport">Carport</option>
+                      <option value="Driveway">Driveway</option>
+                      <option value="Street Parking">Street Parking</option>
+                      <option value="None">No Parking</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Property Condition</label>
+                    <select
+                      name="condition"
+                      value={propertyData.condition}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Select condition</option>
+                      <option value="Excellent">Excellent</option>
+                      <option value="Good">Good</option>
+                      <option value="Needs Updates">Needs Updates</option>
+                      <option value="Fixer-Upper">Fixer-Upper</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Lot Size</label>
+                    <input
+                      type="text"
+                      name="lotSize"
+                      value={propertyData.lotSize}
+                      onChange={handleInputChange}
+                      placeholder="0.25 acres or 10,890 sq ft"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>School District</label>
+                    <input
+                      type="text"
+                      name="schoolDistrict"
+                      value={propertyData.schoolDistrict}
+                      onChange={handleInputChange}
+                      placeholder="Dublin City Schools"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Neighborhood Description</label>
+                  <textarea
+                    name="neighborhood"
+                    value={propertyData.neighborhood}
+                    onChange={handleInputChange}
+                    placeholder="Quiet family neighborhood, close to parks, shopping, and highways. Tree-lined streets with sidewalks."
+                    rows="2"
+                  />
+                </div>
+
+                {/* Special Features Checkboxes */}
+                <div className="form-group">
+                  <label>Special Features</label>
+                  <div className="checkbox-grid">
+                    {Object.entries(propertyData.specialFeatures).map(([feature, isChecked]) => (
+                      <label key={feature} className="checkbox-item">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleFeatureChange(feature)}
+                        />
+                        <span className="checkmark"></span>
+                        {feature.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Generate Button */}
             <button 
               className="generate-btn"
               onClick={generateDescription}
@@ -197,9 +370,14 @@ function App() {
               <h3>AI-Generated Property Description</h3>
               <div className="generated-content">
                 <p>{generatedDescription}</p>
-                <button className="copy-btn" onClick={copyToClipboard}>
-                  Copy to Clipboard
-                </button>
+                <div className="result-actions">
+                  <button className="copy-btn" onClick={copyToClipboard}>
+                    Copy to Clipboard
+                  </button>
+                  <div className="word-count">
+                    {generatedDescription.split(' ').length} words
+                  </div>
+                </div>
               </div>
             </div>
           )}
