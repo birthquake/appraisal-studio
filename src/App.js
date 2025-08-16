@@ -36,10 +36,52 @@ function App() {
     }
   });
   
-  const [generatedDescription, setGeneratedDescription] = useState('');
+  // Content type selection
+  const [contentType, setContentType] = useState('description');
+  const [generatedContent, setGeneratedContent] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [showOptionalFields, setShowOptionalFields] = useState(false);
+
+  // Content type options
+  const contentTypes = [
+    {
+      id: 'description',
+      name: 'Property Description',
+      icon: '🏠',
+      description: 'Professional MLS/marketing descriptions'
+    },
+    {
+      id: 'social_listing',
+      name: 'Social Media Post',
+      icon: '📱',
+      description: 'Facebook/Instagram listing announcements'
+    },
+    {
+      id: 'email_alert',
+      name: 'Email Template',
+      icon: '📧',
+      description: 'New listing alerts for clients'
+    },
+    {
+      id: 'marketing_flyer',
+      name: 'Marketing Highlights',
+      icon: '📄',
+      description: 'Key selling points for flyers'
+    },
+    {
+      id: 'just_listed',
+      name: 'Just Listed Post',
+      icon: '🎉',
+      description: 'Celebration announcement posts'
+    },
+    {
+      id: 'open_house',
+      name: 'Open House Invite',
+      icon: '🚪',
+      description: 'Open house event announcements'
+    }
+  ];
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -61,8 +103,8 @@ function App() {
     }));
   };
 
-  // Generate property description using our secure API
-  const generateDescription = async () => {
+  // Generate content using our enhanced API
+  const generateContent = async () => {
     setIsGenerating(true);
     setError('');
     
@@ -73,7 +115,8 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          propertyData: propertyData
+          propertyData: propertyData,
+          contentType: contentType
         }),
       });
 
@@ -87,11 +130,11 @@ function App() {
         throw new Error(data.error);
       }
 
-      setGeneratedDescription(data.description);
+      setGeneratedContent(data.content);
       
     } catch (err) {
       console.error('API Error:', err);
-      setError('Failed to generate description. Please try again.');
+      setError('Failed to generate content. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -100,7 +143,7 @@ function App() {
   // Copy to clipboard function
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(generatedDescription);
+      await navigator.clipboard.writeText(generatedContent);
       // Could add a toast notification here later
       alert('Copied to clipboard!');
     } catch (err) {
@@ -108,15 +151,8 @@ function App() {
     }
   };
 
-  // Get selected special features as an array
-  const getSelectedFeatures = () => {
-    return Object.entries(propertyData.specialFeatures)
-      .filter(([key, value]) => value)
-      .map(([key, value]) => {
-        // Convert camelCase to readable text
-        return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-      });
-  };
+  // Get current content type info
+  const currentContentType = contentTypes.find(type => type.id === contentType);
 
   return (
     <div className="App">
@@ -124,21 +160,49 @@ function App() {
       <header className="app-header">
         <div className="container">
           <h1 className="logo">AppraisalStudio</h1>
-          <p className="tagline">AI-powered content for real estate professionals</p>
+          <p className="tagline">AI-powered content suite for real estate professionals</p>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container">
         <div className="generator-section">
-          <h2>Property Description Generator</h2>
+          <h2>Real Estate Content Generator</h2>
+          
+          {/* Content Type Selector */}
+          <div className="content-type-section">
+            <h3>Choose Content Type</h3>
+            <div className="content-type-grid">
+              {contentTypes.map((type) => (
+                <div
+                  key={type.id}
+                  className={`content-type-card ${contentType === type.id ? 'selected' : ''}`}
+                  onClick={() => setContentType(type.id)}
+                >
+                  <div className="content-type-icon">{type.icon}</div>
+                  <div className="content-type-info">
+                    <h4>{type.name}</h4>
+                    <p>{type.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Current Selection Display */}
+          <div className="selected-content-type">
+            <div className="selected-type-badge">
+              <span className="selected-icon">{currentContentType.icon}</span>
+              <span>Generating: <strong>{currentContentType.name}</strong></span>
+            </div>
+          </div>
           
           {/* Property Input Form */}
           <div className="form-grid">
             {/* Required Fields Section */}
             <div className="section-header">
-              <h3>Basic Property Information</h3>
-              <p className="section-subtitle">Required fields to generate your description</p>
+              <h3>Property Information</h3>
+              <p className="section-subtitle">Enter property details for AI content generation</p>
             </div>
 
             <div className="form-group">
@@ -236,7 +300,7 @@ function App() {
               >
                 {showOptionalFields ? '▼' : '▶'} Optional Details 
                 <span className="toggle-subtitle">
-                  ({showOptionalFields ? 'Hide' : 'Show'} additional fields for richer descriptions)
+                  ({showOptionalFields ? 'Hide' : 'Show'} additional fields for richer content)
                 </span>
               </button>
             </div>
@@ -351,10 +415,10 @@ function App() {
             {/* Generate Button */}
             <button 
               className="generate-btn"
-              onClick={generateDescription}
+              onClick={generateContent}
               disabled={isGenerating || !propertyData.address || !propertyData.price}
             >
-              {isGenerating ? 'Generating with AI...' : 'Generate Description'}
+              {isGenerating ? 'Generating with AI...' : `Generate ${currentContentType.name}`}
             </button>
 
             {error && (
@@ -365,17 +429,27 @@ function App() {
           </div>
 
           {/* Generated Content */}
-          {generatedDescription && (
+          {generatedContent && (
             <div className="result-section">
-              <h3>AI-Generated Property Description</h3>
+              <h3>AI-Generated {currentContentType.name}</h3>
               <div className="generated-content">
-                <p>{generatedDescription}</p>
+                <div className="content-preview">
+                  <div className="content-type-label">
+                    {currentContentType.icon} {currentContentType.name}
+                  </div>
+                  <p>{generatedContent}</p>
+                </div>
                 <div className="result-actions">
                   <button className="copy-btn" onClick={copyToClipboard}>
                     Copy to Clipboard
                   </button>
-                  <div className="word-count">
-                    {generatedDescription.split(' ').length} words
+                  <div className="content-stats">
+                    <span className="word-count">
+                      {generatedContent.split(' ').length} words
+                    </span>
+                    <span className="char-count">
+                      {generatedContent.length} characters
+                    </span>
                   </div>
                 </div>
               </div>
