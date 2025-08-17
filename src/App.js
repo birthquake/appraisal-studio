@@ -851,7 +851,12 @@ function App() {
                     </div>
                   </div>
                   <div className="results-badge">
-                    <span className="badge-icon">✨</span>
+                    <div className="badge-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22,4 12,14.01 9,11.01"/>
+                      </svg>
+                    </div>
                     <span>Ready to Use</span>
                   </div>
                 </div>
@@ -1210,9 +1215,12 @@ const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   );
 };
 
-// UpgradeModal Component
+// UpgradeModal Component with Real Stripe Integration
 const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
+  const { user } = useFirebase();
   const [selectedPlan, setSelectedPlan] = useState('professional');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
   const plans = [
     {
@@ -1251,20 +1259,97 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
     }
   ];
 
-  const handleUpgrade = (planId) => {
-    showNotification('Stripe integration coming soon! 🚀', 'info');
-    console.log('Upgrading to plan:', planId);
+  const handleUpgrade = async (planId) => {
+    if (!user) {
+      showNotification('Please sign in first', 'error');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planId: planId,
+          userId: user.uid,
+          userEmail: user.email,
+          returnUrl: window.location.origin
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+      
+    } catch (err) {
+      console.error('Upgrade error:', err);
+      setError(err.message || 'Failed to start checkout process');
+      showNotification('Upgrade failed. Please try again.', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
   };
+
+  const handleManageBilling = async () => {
+    if (!user) {
+      showNotification('Please sign in first', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/stripe/customer-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+          returnUrl: window.location.origin
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to access billing portal');
+      }
+
+      // Redirect to Stripe Customer Portal
+      window.location.href = data.url;
+      
+    } catch (err) {
+      console.error('Billing portal error:', err);
+      showNotification('Failed to open billing portal. Please try again.', 'error');
+    }
+  };
+
+  const isSubscribed = userProfile?.subscriptionStatus === 'active';
 
   return (
     <div className="upgrade-modal-overlay" onClick={onClose}>
       <div className="upgrade-modal" onClick={(e) => e.stopPropagation()}>
         <div className="upgrade-modal-header">
           <div className="upgrade-header-content">
-            <h2 className="upgrade-modal-title">Unlock Your Full Potential</h2>
+            <h2 className="upgrade-modal-title">
+              {isSubscribed ? 'Subscription Management' : 'Unlock Your Full Potential'}
+            </h2>
             <p className="upgrade-modal-subtitle">
-              You've used {userProfile?.usageCount || 0} of your {userProfile?.usageLimit || 5} free generations.
-              Upgrade to keep creating professional content.
+              {isSubscribed ? (
+                `You're currently on the ${userProfile.planType || 'Professional'} plan.`
+              ) : (
+                `You've used ${userProfile?.usageCount || 0} of your ${userProfile?.usageLimit || 5} free generations. 
+                 Upgrade to keep creating professional content.`
+              )}
             </p>
           </div>
           <button className="upgrade-modal-close" onClick={onClose}>
@@ -1275,56 +1360,114 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
           </button>
         </div>
 
-        <div className="pricing-cards">
-          {plans.map((plan) => (
-            <div 
-              key={plan.id}
-              className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
-              onClick={() => setSelectedPlan(plan.id)}
-            >
-              {plan.popular && (
-                <div className="popular-badge">
-                  <span>Most Popular</span>
-                </div>
-              )}
-              
-              <div className="pricing-header">
-                <h3 className="plan-name">{plan.name}</h3>
-                <p className="plan-description">{plan.description}</p>
-                <div className="plan-price">
-                  <span className="price-currency">$</span>
-                  <span className="price-amount">{plan.price}</span>
-                  <span className="price-period">/{plan.period}</span>
+        {isSubscribed ? (
+          <div className="subscription-management">
+            <div className="current-plan-card">
+              <div className="plan-header">
+                <h3>Current Plan: {userProfile.planType || 'Professional'}</h3>
+                <div className="plan-status">
+                  <span className="status-indicator active"></span>
+                  <span>Active</span>
                 </div>
               </div>
-
-              <div className="plan-features">
-                <ul>
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="feature-item">
-                      <div className="feature-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="20,6 9,17 4,12"></polyline>
-                        </svg>
-                      </div>
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="plan-details">
+                <p>Your subscription is active and will renew automatically.</p>
+                <p>Generations used: {userProfile.usageCount || 0} this month</p>
               </div>
+            </div>
 
+            <div className="management-actions">
               <button 
-                className={`plan-select-btn ${selectedPlan === plan.id ? 'selected' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUpgrade(plan.id);
-                }}
+                className="manage-billing-btn"
+                onClick={handleManageBilling}
               >
-                {selectedPlan === plan.id ? 'Choose This Plan' : 'Select Plan'}
+                <div className="button-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <circle cx="12" cy="16" r="1"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div className="button-title">Manage Billing</div>
+                  <div className="button-subtitle">Update payment method, view invoices, cancel subscription</div>
+                </div>
               </button>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="pricing-cards">
+            {plans.map((plan) => (
+              <div 
+                key={plan.id}
+                className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
+                onClick={() => setSelectedPlan(plan.id)}
+              >
+                {plan.popular && (
+                  <div className="popular-badge">
+                    <span>Most Popular</span>
+                  </div>
+                )}
+                
+                <div className="pricing-header">
+                  <h3 className="plan-name">{plan.name}</h3>
+                  <p className="plan-description">{plan.description}</p>
+                  <div className="plan-price">
+                    <span className="price-currency">$</span>
+                    <span className="price-amount">{plan.price}</span>
+                    <span className="price-period">/{plan.period}</span>
+                  </div>
+                </div>
+
+                <div className="plan-features">
+                  <ul>
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="feature-item">
+                        <div className="feature-icon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                          </svg>
+                        </div>
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button 
+                  className={`plan-select-btn ${selectedPlan === plan.id ? 'selected' : ''} ${isProcessing ? 'processing' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpgrade(plan.id);
+                  }}
+                  disabled={isProcessing}
+                >
+                  {isProcessing && selectedPlan === plan.id ? (
+                    <div className="processing-content">
+                      <div className="processing-spinner"></div>
+                      <span>Processing...</span>
+                    </div>
+                  ) : (
+                    selectedPlan === plan.id ? 'Choose This Plan' : 'Select Plan'
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="upgrade-error">
+            <div className="error-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
+            <span>{error}</span>
+          </div>
+        )}
 
         <div className="upgrade-footer">
           <div className="security-badges">
