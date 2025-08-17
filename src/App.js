@@ -884,8 +884,432 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Authentication Modal */}
+      {showAuthModal && (
+        <AuthModal 
+          mode={authMode}
+          onClose={() => setShowAuthModal(false)}
+          onSwitchMode={(mode) => setAuthMode(mode)}
+          showNotification={showNotification}
+        />
+      )}
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <UpgradeModal 
+          onClose={() => setShowUpgradeModal(false)}
+          userProfile={userProfile}
+          showNotification={showNotification}
+        />
+      )}
     </div>
   );
 }
 
-export default App;
+// AuthModal Component
+const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
+  const { signIn, signUp, resetPassword, authLoading } = useFirebase();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    displayName: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (mode === 'signup') {
+      if (!formData.displayName) {
+        newErrors.displayName = 'Name is required';
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    try {
+      if (mode === 'signin') {
+        const result = await signIn(formData.email, formData.password);
+        if (result.success) {
+          onClose();
+          showNotification('Welcome back! 🎉', 'success');
+        } else {
+          setErrors({ general: result.error });
+        }
+      } else {
+        const result = await signUp(formData.email, formData.password, formData.displayName);
+        if (result.success) {
+          onClose();
+          showNotification('Account created successfully! Check your email to verify. ✨', 'success');
+        } else {
+          setErrors({ general: result.error });
+        }
+      }
+    } catch (error) {
+      setErrors({ general: 'An unexpected error occurred' });
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setErrors({ email: 'Please enter your email address' });
+      return;
+    }
+
+    const result = await resetPassword(formData.email);
+    if (result.success) {
+      showNotification('Password reset email sent! 📧', 'success');
+    } else {
+      setErrors({ general: result.error });
+    }
+  };
+
+  return (
+    <div className="auth-modal-overlay" onClick={onClose}>
+      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="auth-modal-header">
+          <h2 className="auth-modal-title">
+            {mode === 'signin' ? 'Welcome Back' : 'Join AppraisalStudio'}
+          </h2>
+          <p className="auth-modal-subtitle">
+            {mode === 'signin' 
+              ? 'Sign in to continue generating professional content'
+              : 'Start creating professional real estate content with AI'
+            }
+          </p>
+          <button className="auth-modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {mode === 'signup' && (
+            <div className="auth-input-group">
+              <label className="auth-label">Full Name</label>
+              <input
+                type="text"
+                name="displayName"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                placeholder="John Doe"
+                className={`auth-input ${errors.displayName ? 'error' : ''}`}
+              />
+              {errors.displayName && <span className="auth-error">{errors.displayName}</span>}
+            </div>
+          )}
+
+          <div className="auth-input-group">
+            <label className="auth-label">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="john@example.com"
+              className={`auth-input ${errors.email ? 'error' : ''}`}
+            />
+            {errors.email && <span className="auth-error">{errors.email}</span>}
+          </div>
+
+          <div className="auth-input-group">
+            <label className="auth-label">Password</label>
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="••••••••"
+                className={`auth-input ${errors.password ? 'error' : ''}`}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                )}
+              </button>
+            </div>
+            {errors.password && <span className="auth-error">{errors.password}</span>}
+          </div>
+
+          {mode === 'signup' && (
+            <div className="auth-input-group">
+              <label className="auth-label">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                placeholder="••••••••"
+                className={`auth-input ${errors.confirmPassword ? 'error' : ''}`}
+              />
+              {errors.confirmPassword && <span className="auth-error">{errors.confirmPassword}</span>}
+            </div>
+          )}
+
+          {errors.general && (
+            <div className="auth-error-banner">
+              {errors.general}
+            </div>
+          )}
+
+          <button 
+            type="submit" 
+            className="auth-submit-btn"
+            disabled={authLoading}
+          >
+            {authLoading ? (
+              <div className="auth-loading">
+                <div className="auth-spinner"></div>
+                {mode === 'signin' ? 'Signing In...' : 'Creating Account...'}
+              </div>
+            ) : (
+              mode === 'signin' ? 'Sign In' : 'Create Account'
+            )}
+          </button>
+
+          {mode === 'signin' && (
+            <button 
+              type="button" 
+              className="forgot-password-btn"
+              onClick={handleForgotPassword}
+            >
+              Forgot your password?
+            </button>
+          )}
+        </form>
+
+        <div className="auth-switch">
+          {mode === 'signin' ? (
+            <p>
+              Don't have an account?{' '}
+              <button 
+                className="auth-switch-btn"
+                onClick={() => onSwitchMode('signup')}
+              >
+                Sign up for free
+              </button>
+            </p>
+          ) : (
+            <p>
+              Already have an account?{' '}
+              <button 
+                className="auth-switch-btn"
+                onClick={() => onSwitchMode('signin')}
+              >
+                Sign in
+              </button>
+            </p>
+          )}
+        </div>
+
+        {mode === 'signup' && (
+          <div className="auth-benefits">
+            <h4>What you get with AppraisalStudio:</h4>
+            <ul>
+              <li>✨ 5 free AI-generated content pieces</li>
+              <li>🏠 6 different content types</li>
+              <li>📱 Professional social media posts</li>
+              <li>📧 Email templates and marketing copy</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// UpgradeModal Component
+const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
+  const [selectedPlan, setSelectedPlan] = useState('professional');
+
+  const plans = [
+    {
+      id: 'professional',
+      name: 'Professional',
+      price: 49,
+      period: 'month',
+      popular: true,
+      features: [
+        '100 AI generations per month',
+        'All 6 content types',
+        'Priority generation speed',
+        'Email support',
+        'Content history',
+        'Export to multiple formats'
+      ],
+      description: 'Perfect for individual real estate agents'
+    },
+    {
+      id: 'agency',
+      name: 'Agency',
+      price: 99,
+      period: 'month',
+      popular: false,
+      features: [
+        'Unlimited AI generations',
+        'All 6 content types',
+        'Priority generation speed',
+        'Priority support',
+        'Team collaboration',
+        'Custom branding',
+        'Advanced analytics',
+        'API access'
+      ],
+      description: 'Ideal for teams and agencies'
+    }
+  ];
+
+  const handleUpgrade = (planId) => {
+    showNotification('Stripe integration coming soon! 🚀', 'info');
+    console.log('Upgrading to plan:', planId);
+  };
+
+  return (
+    <div className="upgrade-modal-overlay" onClick={onClose}>
+      <div className="upgrade-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="upgrade-modal-header">
+          <div className="upgrade-header-content">
+            <h2 className="upgrade-modal-title">Unlock Your Full Potential</h2>
+            <p className="upgrade-modal-subtitle">
+              You've used {userProfile?.usageCount || 0} of your {userProfile?.usageLimit || 5} free generations.
+              Upgrade to keep creating professional content.
+            </p>
+          </div>
+          <button className="upgrade-modal-close" onClick={onClose}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div className="pricing-cards">
+          {plans.map((plan) => (
+            <div 
+              key={plan.id}
+              className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
+              onClick={() => setSelectedPlan(plan.id)}
+            >
+              {plan.popular && (
+                <div className="popular-badge">
+                  <span>Most Popular</span>
+                </div>
+              )}
+              
+              <div className="pricing-header">
+                <h3 className="plan-name">{plan.name}</h3>
+                <p className="plan-description">{plan.description}</p>
+                <div className="plan-price">
+                  <span className="price-currency">$</span>
+                  <span className="price-amount">{plan.price}</span>
+                  <span className="price-period">/{plan.period}</span>
+                </div>
+              </div>
+
+              <div className="plan-features">
+                <ul>
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="feature-item">
+                      <div className="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                      </div>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <button 
+                className={`plan-select-btn ${selectedPlan === plan.id ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpgrade(plan.id);
+                }}
+              >
+                {selectedPlan === plan.id ? 'Choose This Plan' : 'Select Plan'}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="upgrade-footer">
+          <div className="security-badges">
+            <div className="security-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <circle cx="12" cy="16" r="1"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>Secure Payment</span>
+            </div>
+            <div className="security-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 12l2 2 4-4"/>
+                <path d="M21 12c.552 0 1-.448 1-1V5c0-.552-.448-1-1-1H3c-.552 0-1 .448-1 1v6c0 .552.448 1 1 1h18z"/>
+              </svg>
+              <span>Cancel Anytime</span>
+            </div>
+            <div className="security-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                <path d="M8 12l2 2 4-4"/>
+              </svg>
+              <span>Money Back Guarantee</span>
+            </div>
+          </div>
+
+                  </div>
+      </div>
+    </div>
+  );
+};
