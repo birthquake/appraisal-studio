@@ -14,6 +14,7 @@ function App() {
   } = useFirebase();
 
   // State management
+  const [currentSection, setCurrentSection] = useState('home');
   const [propertyData, setPropertyData] = useState({
     address: '',
     price: '',
@@ -55,11 +56,20 @@ function App() {
   const [isFormValid, setIsFormValid] = useState(false);
   const [generationHistory, setGenerationHistory] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+  const [authMode, setAuthMode] = useState('signin');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const headerRef = useRef(null);
   const formRef = useRef(null);
+
+  // Navigation items
+  const navigationItems = [
+    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'how-it-works', label: 'How It Works', href: '#how-it-works' },
+    { id: 'pricing', label: 'Pricing', href: '#pricing' },
+    { id: 'faq', label: 'FAQ', href: '#faq' },
+  ];
 
   // Enhanced content types with premium styling
   const contentTypes = [
@@ -73,8 +83,8 @@ function App() {
         </svg>
       ),
       description: 'Professional MLS & marketing descriptions',
-      gradient: 'from-blue-500 via-blue-600 to-indigo-700',
-      accentColor: '#3b82f6',
+      gradient: 'from-primary-500 via-primary-600 to-primary-700',
+      accentColor: 'var(--primary-500)',
       estimatedTime: '15-30s'
     },
     {
@@ -88,8 +98,8 @@ function App() {
         </svg>
       ),
       description: 'Facebook & Instagram announcements',
-      gradient: 'from-purple-500 via-pink-500 to-rose-600',
-      accentColor: '#a855f7',
+      gradient: 'from-accent-purple via-purple-500 to-purple-600',
+      accentColor: 'var(--accent-purple)',
       estimatedTime: '10-20s'
     },
     {
@@ -102,8 +112,8 @@ function App() {
         </svg>
       ),
       description: 'Professional client communications',
-      gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
-      accentColor: '#10b981',
+      gradient: 'from-accent-green via-emerald-500 to-emerald-600',
+      accentColor: 'var(--accent-green)',
       estimatedTime: '15-25s'
     },
     {
@@ -118,8 +128,8 @@ function App() {
         </svg>
       ),
       description: 'Key selling points & flyer content',
-      gradient: 'from-orange-500 via-amber-500 to-yellow-600',
-      accentColor: '#f59e0b',
+      gradient: 'from-accent-orange via-orange-500 to-orange-600',
+      accentColor: 'var(--accent-orange)',
       estimatedTime: '10-20s'
     },
     {
@@ -131,8 +141,8 @@ function App() {
         </svg>
       ),
       description: 'Celebration & announcement posts',
-      gradient: 'from-yellow-400 via-orange-500 to-red-500',
-      accentColor: '#eab308',
+      gradient: 'from-yellow-400 via-accent-orange to-red-500',
+      accentColor: 'var(--accent-orange)',
       estimatedTime: '8-15s'
     },
     {
@@ -146,8 +156,8 @@ function App() {
         </svg>
       ),
       description: 'Event invitations & announcements',
-      gradient: 'from-indigo-500 via-purple-600 to-pink-600',
-      accentColor: '#6366f1',
+      gradient: 'from-primary-500 via-accent-purple to-purple-600',
+      accentColor: 'var(--primary-500)',
       estimatedTime: '12-22s'
     }
   ];
@@ -169,6 +179,22 @@ function App() {
   useEffect(() => {
     setIsFormValid(propertyData.address.trim() && propertyData.price.trim());
   }, [propertyData.address, propertyData.price]);
+
+  // Navigation handler
+  const handleNavigation = (sectionId) => {
+    setCurrentSection(sectionId);
+    setMobileMenuOpen(false);
+    
+    // Smooth scroll to section
+    if (sectionId === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   // Enhanced notification system
   const showNotification = (message, type = 'success', duration = 4000) => {
@@ -353,561 +379,874 @@ function App() {
         </div>
       )}
 
-      {/* Premium header */}
-      <header className="header" ref={headerRef}>
-        <div className="header-glow"></div>
-        <div className="container">
-          <div className="header-content">
-            <div className="brand-section">
-              <div className="logo-container">
-                <div className="logo-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9,22 9,12 15,12 15,22"/>
-                  </svg>
-                </div>
-                <div className="brand-text">
-                  <h1 className="logo">AppraisalStudio</h1>
-                  <p className="tagline">AI-Powered Real Estate Content Suite</p>
-                </div>
-              </div>
+      {/* Enhanced Navigation Header */}
+      <header className="navigation-header">
+        <div className="nav-container">
+          <div className="nav-brand">
+            <div className="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+              </svg>
             </div>
-            
-            <div className="header-stats">
-              {user && userProfile ? (
-                <>
-                  <div className="stat-card">
-                    <div className="stat-value">{userProfile.usageCount || 0}</div>
-                    <div className="stat-label">Used</div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-value">
-                      {getRemainingGenerations() === -1 ? '∞' : getRemainingGenerations()}
-                    </div>
-                    <div className="stat-label">Remaining</div>
-                  </div>
-                  <div className="user-menu">
-                    <div className="user-avatar">
-                      {userProfile.displayName ? userProfile.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="auth-buttons">
-                  <button 
-                    className="auth-btn signin-btn"
-                    onClick={() => {
-                      setAuthMode('signin');
-                      setShowAuthModal(true);
-                    }}
-                  >
-                    Sign In
-                  </button>
-                  <button 
-                    className="auth-btn signup-btn"
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setShowAuthModal(true);
-                    }}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              )}
+            <div className="brand-text">
+              <span className="brand-name">AppraisalStudio</span>
             </div>
           </div>
+
+          {/* Desktop Navigation */}
+          <nav className="desktop-nav">
+            <ul className="nav-list">
+              {navigationItems.map((item) => (
+                <li key={item.id} className="nav-item">
+                  <button
+                    className={`nav-link ${currentSection === item.id ? 'active' : ''}`}
+                    onClick={() => handleNavigation(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* User Actions */}
+          <div className="nav-actions">
+            {user && userProfile ? (
+              <div className="user-nav">
+                <div className="usage-display">
+                  <span className="usage-text">
+                    {getRemainingGenerations() === -1 ? '∞' : getRemainingGenerations()} left
+                  </span>
+                </div>
+                <div className="user-avatar">
+                  {userProfile.displayName ? userProfile.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                </div>
+              </div>
+            ) : (
+              <div className="auth-nav">
+                <button 
+                  className="nav-auth-btn signin"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Sign In
+                </button>
+                <button 
+                  className="nav-auth-btn signup"
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Get Started
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <div className={`hamburger ${mobileMenuOpen ? 'active' : ''}`}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className={`mobile-nav ${mobileMenuOpen ? 'open' : ''}`}>
+          <ul className="mobile-nav-list">
+            {navigationItems.map((item) => (
+              <li key={item.id} className="mobile-nav-item">
+                <button
+                  className={`mobile-nav-link ${currentSection === item.id ? 'active' : ''}`}
+                  onClick={() => handleNavigation(item.id)}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {!user && (
+            <div className="mobile-auth">
+              <button 
+                className="mobile-auth-btn signin"
+                onClick={() => {
+                  setAuthMode('signin');
+                  setShowAuthModal(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Sign In
+              </button>
+              <button 
+                className="mobile-auth-btn signup"
+                onClick={() => {
+                  setAuthMode('signup');
+                  setShowAuthModal(true);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Get Started
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main content */}
       <main className="main">
-        <div className="container">
-          <div className="hero-section">
-            <h2 className="hero-title">
-              Transform Property Details Into 
-              <span className="gradient-text"> Professional Content</span>
-            </h2>
-            <p className="hero-subtitle">
-              Enter your property information once, then generate unlimited marketing content 
-              with AI-powered precision in seconds
-            </p>
-          </div>
-
-          {/* Enhanced form */}
-          <div className="form-section" ref={formRef}>
-            <div className="form-card">
-              <div className="form-header">
-                <div className="form-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M9 12h6l-3-3 3-3h-6l3 3-3 3z"/>
-                    <path d="M21 12c0 1.657-4.03 3-9 3s-9-1.343-9-3"/>
+        {/* Home Section */}
+        <section id="home" className="hero-section">
+          <div className="container">
+            <div className="hero-content">
+              <h1 className="hero-title">
+                Transform Property Details Into 
+                <span className="gradient-text"> Professional Content</span>
+              </h1>
+              <p className="hero-subtitle">
+                Enter your property information once, then generate unlimited marketing content 
+                with AI-powered precision in seconds
+              </p>
+              <div className="hero-cta">
+                {user ? (
+                  <button 
+                    className="cta-button primary"
+                    onClick={() => {
+                      const formSection = document.querySelector('.form-section');
+                      formSection?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <span>Start Generating</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12,5 19,12 12,19"></polyline>
+                    </svg>
+                  </button>
+                ) : (
+                  <button 
+                    className="cta-button primary"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setShowAuthModal(true);
+                    }}
+                  >
+                    <span>Get Started Free</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12,5 19,12 12,19"></polyline>
+                    </svg>
+                  </button>
+                )}
+                <button 
+                  className="cta-button secondary"
+                  onClick={() => handleNavigation('how-it-works')}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="5,3 19,12 5,21"/>
                   </svg>
-                </div>
-                <div>
-                  <h3 className="form-title">Property Information</h3>
-                  <p className="form-description">
-                    Fill out the details below to power intelligent content generation
-                  </p>
-                </div>
+                  <span>See How It Works</span>
+                </button>
               </div>
+            </div>
+          </div>
+        </section>
 
-              <div className="form-grid">
-                <div className="input-group">
-                  <label className="input-label">
-                    <span>Property Address</span>
-                    <span className="required-indicator">*</span>
-                  </label>
-                  <div className="input-wrapper">
-                    <input
-                      type="text"
-                      name="address"
-                      value={propertyData.address}
-                      onChange={handleInputChange}
-                      placeholder="123 Main Street, City, State"
-                      className="enhanced-input"
-                    />
-                    <div className="input-underline"></div>
+        {/* Generator Form Section */}
+        {user && (
+          <div className="form-section" ref={formRef}>
+            <div className="container">
+              <div className="form-card">
+                <div className="form-header">
+                  <div className="form-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M9 12h6l-3-3 3-3h-6l3 3-3 3z"/>
+                      <path d="M21 12c0 1.657-4.03 3-9 3s-9-1.343-9-3"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="form-title">Property Information</h3>
+                    <p className="form-description">
+                      Fill out the details below to power intelligent content generation
+                    </p>
                   </div>
                 </div>
 
-                <div className="form-row">
+                <div className="form-grid">
                   <div className="input-group">
                     <label className="input-label">
-                      <span>Property Type</span>
-                      <span className="required-indicator">*</span>
-                    </label>
-                    <div className="select-wrapper">
-                      <select
-                        name="propertyType"
-                        value={propertyData.propertyType}
-                        onChange={handleInputChange}
-                        className="enhanced-select"
-                      >
-                        <option value="Single Family Home">Single Family Home</option>
-                        <option value="Condo">Condo</option>
-                        <option value="Townhouse">Townhouse</option>
-                        <option value="Multi-Family">Multi-Family</option>
-                        <option value="Land">Land</option>
-                        <option value="Commercial">Commercial</option>
-                      </select>
-                      <div className="select-arrow">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="input-group">
-                    <label className="input-label">
-                      <span>Price</span>
+                      <span>Property Address</span>
                       <span className="required-indicator">*</span>
                     </label>
                     <div className="input-wrapper">
                       <input
                         type="text"
-                        name="price"
-                        value={propertyData.price}
+                        name="address"
+                        value={propertyData.address}
                         onChange={handleInputChange}
-                        placeholder="450,000"
-                        className="enhanced-input"
-                      />
-                      <div className="input-underline"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="input-group">
-                    <label className="input-label">Bedrooms</label>
-                    <div className="input-wrapper">
-                      <input
-                        type="number"
-                        name="bedrooms"
-                        value={propertyData.bedrooms}
-                        onChange={handleInputChange}
-                        placeholder="3"
+                        placeholder="123 Main Street, City, State"
                         className="enhanced-input"
                       />
                       <div className="input-underline"></div>
                     </div>
                   </div>
 
-                  <div className="input-group">
-                    <label className="input-label">Bathrooms</label>
-                    <div className="input-wrapper">
-                      <input
-                        type="number"
-                        name="bathrooms"
-                        value={propertyData.bathrooms}
-                        onChange={handleInputChange}
-                        placeholder="2"
-                        className="enhanced-input"
-                      />
-                      <div className="input-underline"></div>
-                    </div>
-                  </div>
-
-                  <div className="input-group">
-                    <label className="input-label">Square Feet</label>
-                    <div className="input-wrapper">
-                      <input
-                        type="number"
-                        name="sqft"
-                        value={propertyData.sqft}
-                        onChange={handleInputChange}
-                        placeholder="2500"
-                        className="enhanced-input"
-                      />
-                      <div className="input-underline"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="input-group">
-                  <label className="input-label">Key Features</label>
-                  <div className="textarea-wrapper">
-                    <textarea
-                      name="features"
-                      value={propertyData.features}
-                      onChange={handleInputChange}
-                      placeholder="Updated kitchen, hardwood floors, large backyard, garage, master suite..."
-                      rows="3"
-                      className="enhanced-textarea"
-                    />
-                    <div className="textarea-underline"></div>
-                  </div>
-                </div>
-
-                {/* Enhanced optional fields toggle */}
-                <div className="optional-section-toggle">
-                  <button
-                    type="button"
-                    className="toggle-button"
-                    onClick={() => setShowOptionalFields(!showOptionalFields)}
-                  >
-                    <div className="toggle-icon-wrapper">
-                      <div className={`toggle-icon ${showOptionalFields ? 'rotated' : ''}`}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="6,9 12,15 18,9"></polyline>
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="toggle-content">
-                      <span className="toggle-title">Optional Details</span>
-                      <span className="toggle-subtitle">
-                        Add more context for richer, more detailed content
-                      </span>
-                    </div>
-                    <div className="toggle-badge">
-                      {Object.values(propertyData.specialFeatures).filter(Boolean).length + 
-                       [propertyData.yearBuilt, propertyData.parking, propertyData.condition, 
-                        propertyData.lotSize, propertyData.schoolDistrict, propertyData.neighborhood]
-                       .filter(field => field && field.trim()).length}
-                    </div>
-                  </button>
-                </div>
-
-                {/* Optional fields with enhanced styling */}
-                {showOptionalFields && (
-                  <div className="optional-fields">
-                    <div className="optional-divider">
-                      <span>Additional Property Details</span>
-                    </div>
-                    
-                    <div className="form-row">
-                      <div className="input-group">
-                        <label className="input-label">Year Built</label>
-                        <div className="input-wrapper">
-                          <input
-                            type="number"
-                            name="yearBuilt"
-                            value={propertyData.yearBuilt}
-                            onChange={handleInputChange}
-                            placeholder="2020"
-                            min="1800"
-                            max={new Date().getFullYear()}
-                            className="enhanced-input"
-                          />
-                          <div className="input-underline"></div>
-                        </div>
-                      </div>
-
-                      <div className="input-group">
-                        <label className="input-label">Parking</label>
-                        <div className="select-wrapper">
-                          <select
-                            name="parking"
-                            value={propertyData.parking}
-                            onChange={handleInputChange}
-                            className="enhanced-select"
-                          >
-                            <option value="">Select parking type</option>
-                            <option value="Attached Garage">Attached Garage</option>
-                            <option value="Detached Garage">Detached Garage</option>
-                            <option value="Carport">Carport</option>
-                            <option value="Driveway">Driveway</option>
-                            <option value="Street Parking">Street Parking</option>
-                            <option value="None">No Parking</option>
-                          </select>
-                          <div className="select-arrow">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="6,9 12,15 18,9"></polyline>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="input-group">
-                        <label className="input-label">Condition</label>
-                        <div className="select-wrapper">
-                          <select
-                            name="condition"
-                            value={propertyData.condition}
-                            onChange={handleInputChange}
-                            className="enhanced-select"
-                          >
-                            <option value="">Select condition</option>
-                            <option value="Excellent">Excellent</option>
-                            <option value="Good">Good</option>
-                            <option value="Needs Updates">Needs Updates</option>
-                            <option value="Fixer-Upper">Fixer-Upper</option>
-                          </select>
-                          <div className="select-arrow">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="6,9 12,15 18,9"></polyline>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="input-group">
-                        <label className="input-label">Lot Size</label>
-                        <div className="input-wrapper">
-                          <input
-                            type="text"
-                            name="lotSize"
-                            value={propertyData.lotSize}
-                            onChange={handleInputChange}
-                            placeholder="0.25 acres or 10,890 sq ft"
-                            className="enhanced-input"
-                          />
-                          <div className="input-underline"></div>
-                        </div>
-                      </div>
-
-                      <div className="input-group">
-                        <label className="input-label">School District</label>
-                        <div className="input-wrapper">
-                          <input
-                            type="text"
-                            name="schoolDistrict"
-                            value={propertyData.schoolDistrict}
-                            onChange={handleInputChange}
-                            placeholder="Dublin City Schools"
-                            className="enhanced-input"
-                          />
-                          <div className="input-underline"></div>
-                        </div>
-                      </div>
-                    </div>
-
+                  <div className="form-row">
                     <div className="input-group">
-                      <label className="input-label">Neighborhood Description</label>
-                      <div className="textarea-wrapper">
-                        <textarea
-                          name="neighborhood"
-                          value={propertyData.neighborhood}
+                      <label className="input-label">
+                        <span>Property Type</span>
+                        <span className="required-indicator">*</span>
+                      </label>
+                      <div className="select-wrapper">
+                        <select
+                          name="propertyType"
+                          value={propertyData.propertyType}
                           onChange={handleInputChange}
-                          placeholder="Quiet family neighborhood, close to parks, shopping, and highways..."
-                          rows="2"
-                          className="enhanced-textarea"
-                        />
-                        <div className="textarea-underline"></div>
+                          className="enhanced-select"
+                        >
+                          <option value="Single Family Home">Single Family Home</option>
+                          <option value="Condo">Condo</option>
+                          <option value="Townhouse">Townhouse</option>
+                          <option value="Multi-Family">Multi-Family</option>
+                          <option value="Land">Land</option>
+                          <option value="Commercial">Commercial</option>
+                        </select>
+                        <div className="select-arrow">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="6,9 12,15 18,9"></polyline>
+                          </svg>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Enhanced special features */}
                     <div className="input-group">
-                      <label className="input-label">Special Features</label>
-                      <div className="features-grid">
-                        {Object.entries(propertyData.specialFeatures).map(([feature, isChecked]) => (
-                          <label key={feature} className="feature-checkbox">
+                      <label className="input-label">
+                        <span>Price</span>
+                        <span className="required-indicator">*</span>
+                      </label>
+                      <div className="input-wrapper">
+                        <input
+                          type="text"
+                          name="price"
+                          value={propertyData.price}
+                          onChange={handleInputChange}
+                          placeholder="450,000"
+                          className="enhanced-input"
+                        />
+                        <div className="input-underline"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="input-group">
+                      <label className="input-label">Bedrooms</label>
+                      <div className="input-wrapper">
+                        <input
+                          type="number"
+                          name="bedrooms"
+                          value={propertyData.bedrooms}
+                          onChange={handleInputChange}
+                          placeholder="3"
+                          className="enhanced-input"
+                        />
+                        <div className="input-underline"></div>
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label className="input-label">Bathrooms</label>
+                      <div className="input-wrapper">
+                        <input
+                          type="number"
+                          name="bathrooms"
+                          value={propertyData.bathrooms}
+                          onChange={handleInputChange}
+                          placeholder="2"
+                          className="enhanced-input"
+                        />
+                        <div className="input-underline"></div>
+                      </div>
+                    </div>
+
+                    <div className="input-group">
+                      <label className="input-label">Square Feet</label>
+                      <div className="input-wrapper">
+                        <input
+                          type="number"
+                          name="sqft"
+                          value={propertyData.sqft}
+                          onChange={handleInputChange}
+                          placeholder="2500"
+                          className="enhanced-input"
+                        />
+                        <div className="input-underline"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="input-group">
+                    <label className="input-label">Key Features</label>
+                    <div className="textarea-wrapper">
+                      <textarea
+                        name="features"
+                        value={propertyData.features}
+                        onChange={handleInputChange}
+                        placeholder="Updated kitchen, hardwood floors, large backyard, garage, master suite..."
+                        rows="3"
+                        className="enhanced-textarea"
+                      />
+                      <div className="textarea-underline"></div>
+                    </div>
+                  </div>
+
+                  {/* Enhanced optional fields toggle */}
+                  <div className="optional-section-toggle">
+                    <button
+                      type="button"
+                      className="toggle-button"
+                      onClick={() => setShowOptionalFields(!showOptionalFields)}
+                    >
+                      <div className="toggle-icon-wrapper">
+                        <div className={`toggle-icon ${showOptionalFields ? 'rotated' : ''}`}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="6,9 12,15 18,9"></polyline>
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="toggle-content">
+                        <span className="toggle-title">Optional Details</span>
+                        <span className="toggle-subtitle">
+                          Add more context for richer, more detailed content
+                        </span>
+                      </div>
+                      <div className="toggle-badge">
+                        {Object.values(propertyData.specialFeatures).filter(Boolean).length + 
+                         [propertyData.yearBuilt, propertyData.parking, propertyData.condition, 
+                          propertyData.lotSize, propertyData.schoolDistrict, propertyData.neighborhood]
+                         .filter(field => field && field.trim()).length}
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Optional fields with enhanced styling */}
+                  {showOptionalFields && (
+                    <div className="optional-fields">
+                      <div className="optional-divider">
+                        <span>Additional Property Details</span>
+                      </div>
+                      
+                      <div className="form-row">
+                        <div className="input-group">
+                          <label className="input-label">Year Built</label>
+                          <div className="input-wrapper">
                             <input
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => handleFeatureChange(feature)}
-                              className="checkbox-input"
+                              type="number"
+                              name="yearBuilt"
+                              value={propertyData.yearBuilt}
+                              onChange={handleInputChange}
+                              placeholder="2020"
+                              min="1800"
+                              max={new Date().getFullYear()}
+                              className="enhanced-input"
                             />
-                            <div className="checkbox-visual">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                <polyline points="20,6 9,17 4,12"></polyline>
+                            <div className="input-underline"></div>
+                          </div>
+                        </div>
+
+                        <div className="input-group">
+                          <label className="input-label">Parking</label>
+                          <div className="select-wrapper">
+                            <select
+                              name="parking"
+                              value={propertyData.parking}
+                              onChange={handleInputChange}
+                              className="enhanced-select"
+                            >
+                              <option value="">Select parking type</option>
+                              <option value="Attached Garage">Attached Garage</option>
+                              <option value="Detached Garage">Detached Garage</option>
+                              <option value="Carport">Carport</option>
+                              <option value="Driveway">Driveway</option>
+                              <option value="Street Parking">Street Parking</option>
+                              <option value="None">No Parking</option>
+                            </select>
+                            <div className="select-arrow">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="6,9 12,15 18,9"></polyline>
                               </svg>
                             </div>
-                            <span className="checkbox-label">
-                              {feature.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+                          </div>
+                        </div>
 
-            {/* Enhanced content type selection */}
-            <div className="content-types-section">
-              <div className="section-header">
-                <h3 className="section-title">Choose Your Content Type</h3>
-                <p className="section-subtitle">
-                  Select the format that matches your marketing needs
-                </p>
-              </div>
-              
-              <div className="content-types-grid">
-                {contentTypes.map((type) => (
-                  <div
-                    key={type.id}
-                    className={`content-type-option ${contentType === type.id ? 'selected' : ''}`}
-                    onClick={() => setContentType(type.id)}
-                    style={{ '--accent-color': type.accentColor }}
-                  >
-                    <div className="option-background"></div>
-                    <div className="option-content">
-                      <div className="option-icon">
-                        {type.icon}
-                      </div>
-                      <div className="option-info">
-                        <h4 className="option-title">{type.name}</h4>
-                        <p className="option-description">{type.description}</p>
-                        <div className="option-meta">
-                          <span className="generation-time">~{type.estimatedTime}</span>
+                        <div className="input-group">
+                          <label className="input-label">Condition</label>
+                          <div className="select-wrapper">
+                            <select
+                              name="condition"
+                              value={propertyData.condition}
+                              onChange={handleInputChange}
+                              className="enhanced-select"
+                            >
+                              <option value="">Select condition</option>
+                              <option value="Excellent">Excellent</option>
+                              <option value="Good">Good</option>
+                              <option value="Needs Updates">Needs Updates</option>
+                              <option value="Fixer-Upper">Fixer-Upper</option>
+                            </select>
+                            <div className="select-arrow">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="6,9 12,15 18,9"></polyline>
+                              </svg>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="option-selector">
-                        <div className="selector-dot"></div>
+
+                      <div className="form-row">
+                        <div className="input-group">
+                          <label className="input-label">Lot Size</label>
+                          <div className="input-wrapper">
+                            <input
+                              type="text"
+                              name="lotSize"
+                              value={propertyData.lotSize}
+                              onChange={handleInputChange}
+                              placeholder="0.25 acres or 10,890 sq ft"
+                              className="enhanced-input"
+                            />
+                            <div className="input-underline"></div>
+                          </div>
+                        </div>
+
+                        <div className="input-group">
+                          <label className="input-label">School District</label>
+                          <div className="input-wrapper">
+                            <input
+                              type="text"
+                              name="schoolDistrict"
+                              value={propertyData.schoolDistrict}
+                              onChange={handleInputChange}
+                              placeholder="Dublin City Schools"
+                              className="enhanced-input"
+                            />
+                            <div className="input-underline"></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="input-group">
+                        <label className="input-label">Neighborhood Description</label>
+                        <div className="textarea-wrapper">
+                          <textarea
+                            name="neighborhood"
+                            value={propertyData.neighborhood}
+                            onChange={handleInputChange}
+                            placeholder="Quiet family neighborhood, close to parks, shopping, and highways..."
+                            rows="2"
+                            className="enhanced-textarea"
+                          />
+                          <div className="textarea-underline"></div>
+                        </div>
+                      </div>
+
+                      {/* Enhanced special features */}
+                      <div className="input-group">
+                        <label className="input-label">Special Features</label>
+                        <div className="features-grid">
+                          {Object.entries(propertyData.specialFeatures).map(([feature, isChecked]) => (
+                            <label key={feature} className="feature-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleFeatureChange(feature)}
+                                className="checkbox-input"
+                              />
+                              <div className="checkbox-visual">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                  <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                              </div>
+                              <span className="checkbox-label">
+                                {feature.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
 
-              {/* Premium generate button */}
-              <div className="generate-section">
-                <button 
-                  className={`generate-button ${!isFormValid ? 'disabled' : ''} ${isGenerating ? 'generating' : ''}`}
-                  onClick={generateContent}
-                  disabled={!isFormValid || isGenerating}
-                >
-                  <div className="button-background"></div>
-                  <div className="button-content">
-                    {isGenerating ? (
-                      <>
-                        <div className="loading-spinner">
-                          <div className="spinner-ring"></div>
-                          <div className="spinner-ring"></div>
-                          <div className="spinner-ring"></div>
+              {/* Enhanced content type selection */}
+              <div className="content-types-section">
+                <div className="section-header">
+                  <h3 className="section-title">Choose Your Content Type</h3>
+                  <p className="section-subtitle">
+                    Select the format that matches your marketing needs
+                  </p>
+                </div>
+                
+                <div className="content-types-grid">
+                  {contentTypes.map((type) => (
+                    <div
+                      key={type.id}
+                      className={`content-type-option ${contentType === type.id ? 'selected' : ''}`}
+                      onClick={() => setContentType(type.id)}
+                      style={{ '--accent-color': type.accentColor }}
+                    >
+                      <div className="option-background"></div>
+                      <div className="option-content">
+                        <div className="option-icon">
+                          {type.icon}
                         </div>
-                        <span>Generating with AI...</span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="button-icon">
-                          {currentContentType.icon}
+                        <div className="option-info">
+                          <h4 className="option-title">{type.name}</h4>
+                          <p className="option-description">{type.description}</p>
+                          <div className="option-meta">
+                            <span className="generation-time">~{type.estimatedTime}</span>
+                          </div>
                         </div>
-                        <span>Generate {currentContentType.name}</span>
-                        <div className="button-arrow">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                            <polyline points="12,5 19,12 12,19"></polyline>
-                          </svg>
+                        <div className="option-selector">
+                          <div className="selector-dot"></div>
                         </div>
-                      </>
-                    )}
-                  </div>
-                </button>
-
-                {error && (
-                  <div className="error-display">
-                    <div className="error-icon">⚠️</div>
-                    <span>{error}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Premium results section */}
-            {generatedContent && (
-              <div className="results-section">
-                <div className="results-header">
-                  <div className="results-title-section">
-                    <h3 className="results-title">Your Generated Content</h3>
-                    <div className="content-type-indicator">
-                      <div className="indicator-icon">{currentContentType.icon}</div>
-                      <span>{currentContentType.name}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="results-badge">
-                    <div className="badge-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                        <polyline points="22,4 12,14.01 9,11.01"/>
-                      </svg>
-                    </div>
-                    <span>Ready to Use</span>
-                  </div>
+                  ))}
                 </div>
 
-                <div className="content-display">
-                  <div className="content-wrapper">
-                    <div className="content-text">
-                      {generatedContent}
+                {/* Premium generate button */}
+                <div className="generate-section">
+                  <button 
+                    className={`generate-button ${!isFormValid ? 'disabled' : ''} ${isGenerating ? 'generating' : ''}`}
+                    onClick={generateContent}
+                    disabled={!isFormValid || isGenerating}
+                  >
+                    <div className="button-background"></div>
+                    <div className="button-content">
+                      {isGenerating ? (
+                        <>
+                          <div className="loading-spinner">
+                            <div className="spinner-ring"></div>
+                            <div className="spinner-ring"></div>
+                            <div className="spinner-ring"></div>
+                          </div>
+                          <span>Generating with AI...</span>
+                        </>
+                      ) : (
+                        <>
+                          <div className="button-icon">
+                            {currentContentType.icon}
+                          </div>
+                          <span>Generate {currentContentType.name}</span>
+                          <div className="button-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                              <polyline points="12,5 19,12 12,19"></polyline>
+                            </svg>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </button>
+
+                  {error && (
+                    <div className="error-display">
+                      <div className="error-icon">⚠️</div>
+                      <span>{error}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Premium results section */}
+              {generatedContent && (
+                <div className="results-section">
+                  <div className="results-header">
+                    <div className="results-title-section">
+                      <h3 className="results-title">Your Generated Content</h3>
+                      <div className="content-type-indicator">
+                        <div className="indicator-icon">{currentContentType.icon}</div>
+                        <span>{currentContentType.name}</span>
+                      </div>
+                    </div>
+                    <div className="results-badge">
+                      <div className="badge-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                          <polyline points="22,4 12,14.01 9,11.01"/>
+                        </svg>
+                      </div>
+                      <span>Ready to Use</span>
                     </div>
                   </div>
-                  
-                  <div className="content-actions">
-                    <div className="action-buttons">
-                      <button className="action-button primary" onClick={copyToClipboard}>
-                        <div className="button-icon">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                          </svg>
-                        </div>
-                        <span>Copy to Clipboard</span>
-                      </button>
-                      
-                      <button className="action-button secondary" onClick={downloadContent}>
-                        <div className="button-icon">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7,10 12,15 17,10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                          </svg>
-                        </div>
-                        <span>Download</span>
-                      </button>
+
+                  <div className="content-display">
+                    <div className="content-wrapper">
+                      <div className="content-text">
+                        {generatedContent}
+                      </div>
                     </div>
                     
-                    <div className="content-stats">
-                      <div className="stat">
-                        <span className="stat-value">{generatedContent.split(' ').length}</span>
-                        <span className="stat-label">Words</span>
+                    <div className="content-actions">
+                      <div className="action-buttons">
+                        <button className="action-button primary" onClick={copyToClipboard}>
+                          <div className="button-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                          </div>
+                          <span>Copy to Clipboard</span>
+                        </button>
+                        
+                        <button className="action-button secondary" onClick={downloadContent}>
+                          <div className="button-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7,10 12,15 17,10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                          </div>
+                          <span>Download</span>
+                        </button>
                       </div>
-                      <div className="stat">
-                        <span className="stat-value">{generatedContent.length}</span>
-                        <span className="stat-label">Characters</span>
+                      
+                      <div className="content-stats">
+                        <div className="stat">
+                          <span className="stat-value">{generatedContent.split(' ').length}</span>
+                          <span className="stat-label">Words</span>
+                        </div>
+                        <div className="stat">
+                          <span className="stat-value">{generatedContent.length}</span>
+                          <span className="stat-label">Characters</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* How It Works Section */}
+        <section id="how-it-works" className="how-it-works-section">
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">How It Works</h2>
+              <p className="section-subtitle">
+                Generate professional real estate content in three simple steps
+              </p>
+            </div>
+
+            <div className="steps-grid">
+              <div className="step-card">
+                <div className="step-number">1</div>
+                <div className="step-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9,22 9,12 15,12 15,22"/>
+                  </svg>
+                </div>
+                <h3 className="step-title">Enter Property Details</h3>
+                <p className="step-description">
+                  Add your property information once - address, price, features, and any special details that make it unique.
+                </p>
+              </div>
+
+              <div className="step-card">
+                <div className="step-number">2</div>
+                <div className="step-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                </div>
+                <h3 className="step-title">Choose Content Type</h3>
+                <p className="step-description">
+                  Select from 6 professional formats: MLS descriptions, social posts, email templates, and more.
+                </p>
+              </div>
+
+              <div className="step-card">
+                <div className="step-number">3</div>
+                <div className="step-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+                <h3 className="step-title">Get Instant Results</h3>
+                <p className="step-description">
+                  AI generates professional, ready-to-use content in seconds. Copy, download, or customize as needed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Section */}
+        <section id="pricing" className="pricing-section">
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">Simple, Transparent Pricing</h2>
+              <p className="section-subtitle">
+                Choose the plan that fits your business needs
+              </p>
+            </div>
+
+            <div className="pricing-cards-container">
+              <div className="pricing-card free">
+                <h3 className="pricing-plan-name">Free Trial</h3>
+                <div className="pricing-price">
+                  <span className="price-amount">$0</span>
+                  <span className="price-period">forever</span>
+                </div>
+                <ul className="pricing-features">
+                  <li>5 AI generations</li>
+                  <li>All 6 content types</li>
+                  <li>Basic generation speed</li>
+                  <li>Email support</li>
+                </ul>
+                <button 
+                  className="pricing-cta"
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Get Started
+                </button>
+              </div>
+
+              <div className="pricing-card professional popular">
+                <div className="popular-badge">Most Popular</div>
+                <h3 className="pricing-plan-name">Professional</h3>
+                <div className="pricing-price">
+                  <span className="price-amount">$49</span>
+                  <span className="price-period">/month</span>
+                </div>
+                <ul className="pricing-features">
+                  <li>100 AI generations/month</li>
+                  <li>All 6 content types</li>
+                  <li>Priority generation speed</li>
+                  <li>Priority email support</li>
+                  <li>Content history</li>
+                  <li>Export to multiple formats</li>
+                </ul>
+                <button 
+                  className="pricing-cta"
+                  onClick={() => {
+                    if (user) {
+                      setShowUpgradeModal(true);
+                    } else {
+                      setAuthMode('signup');
+                      setShowAuthModal(true);
+                    }
+                  }}
+                >
+                  {user ? 'Upgrade Now' : 'Start Free Trial'}
+                </button>
+              </div>
+
+              <div className="pricing-card agency">
+                <h3 className="pricing-plan-name">Agency</h3>
+                <div className="pricing-price">
+                  <span className="price-amount">$99</span>
+                  <span className="price-period">/month</span>
+                </div>
+                <ul className="pricing-features">
+                  <li>Unlimited AI generations</li>
+                  <li>All 6 content types</li>
+                  <li>Priority generation speed</li>
+                  <li>Priority phone & email support</li>
+                  <li>Team collaboration</li>
+                  <li>Custom branding</li>
+                  <li>Advanced analytics</li>
+                  <li>API access</li>
+                </ul>
+                <button 
+                  className="pricing-cta"
+                  onClick={() => {
+                    if (user) {
+                      setShowUpgradeModal(true);
+                    } else {
+                      setAuthMode('signup');
+                      setShowAuthModal(true);
+                    }
+                  }}
+                >
+                  {user ? 'Upgrade Now' : 'Start Free Trial'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section id="faq" className="faq-section">
+          <div className="container">
+            <div className="section-header">
+              <h2 className="section-title">Frequently Asked Questions</h2>
+              <p className="section-subtitle">
+                Everything you need to know about AppraisalStudio
+              </p>
+            </div>
+
+            <div className="faq-grid">
+              <div className="faq-item">
+                <h3 className="faq-question">How accurate is the AI-generated content?</h3>
+                <p className="faq-answer">
+                  Our AI is trained specifically on real estate content and produces professional-quality descriptions that you can use immediately or customize as needed.
+                </p>
+              </div>
+
+              <div className="faq-item">
+                <h3 className="faq-question">Can I edit the generated content?</h3>
+                <p className="faq-answer">
+                  Absolutely! All generated content is fully editable. Use it as-is or customize it to match your specific style and needs.
+                </p>
+              </div>
+
+              <div className="faq-item">
+                <h3 className="faq-question">What content types are available?</h3>
+                <p className="faq-answer">
+                  We offer 6 content types: Property descriptions, social media posts, email templates, marketing highlights, just listed announcements, and open house invitations.
+                </p>
+              </div>
+
+              <div className="faq-item">
+                <h3 className="faq-question">Is there a free trial?</h3>
+                <p className="faq-answer">
+                  Yes! Every new account gets 5 free AI generations to try out all our features before upgrading to a paid plan.
+                </p>
+              </div>
+
+              <div className="faq-item">
+                <h3 className="faq-question">Can I cancel anytime?</h3>
+                <p className="faq-answer">
+                  Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
+                </p>
+              </div>
+
+              <div className="faq-item">
+                <h3 className="faq-question">Do you offer team features?</h3>
+                <p className="faq-answer">
+                  Our Agency plan includes team collaboration features, custom branding, and advanced analytics perfect for real estate teams and brokerages.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Authentication Modal */}
@@ -932,7 +1271,7 @@ function App() {
   );
 }
 
-// AuthModal Component
+// AuthModal Component (same as before)
 const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   const { signIn, signUp, resetPassword, authLoading } = useFirebase();
   const [formData, setFormData] = useState({
@@ -1215,7 +1554,7 @@ const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   );
 };
 
-// UpgradeModal Component with Real Stripe Integration
+// UpgradeModal Component with Real Stripe Integration (same as before)
 const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
   const { user } = useFirebase();
   const [selectedPlan, setSelectedPlan] = useState('professional');
