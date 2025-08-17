@@ -1,4 +1,4 @@
-/* Enhanced App.css for Multi-Content Types */
+/* Enhanced App.css for Multi-Content Types with SVG Icons */
 
 /* Base styles */
 * {
@@ -68,9 +68,9 @@ main {
 
 /* Content Type Selection */
 .content-type-section {
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 2px solid #e2e8f0;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e2e8f0;
 }
 
 .content-type-section h3 {
@@ -114,8 +114,23 @@ main {
 }
 
 .content-type-icon {
-  font-size: 2rem;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-type-icon svg {
+  width: 32px;
+  height: 32px;
+  color: #4a5568;
+  transition: color 0.3s ease;
+}
+
+.content-type-card.selected .content-type-icon svg {
+  color: white;
 }
 
 .content-type-info h4 {
@@ -132,27 +147,6 @@ main {
 
 .content-type-card.selected .content-type-info p {
   opacity: 0.9;
-}
-
-/* Selected Content Type Display */
-.selected-content-type {
-  margin-bottom: 1.5rem;
-}
-
-.selected-type-badge {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
-}
-
-.selected-icon {
-  font-size: 1.2rem;
 }
 
 /* Section Headers */
@@ -338,7 +332,8 @@ main {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  width: 100%;
 }
 
 .generate-btn:hover:not(:disabled) {
@@ -390,12 +385,29 @@ main {
 .content-type-label {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 6px;
   font-size: 0.9rem;
   font-weight: 600;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 1rem;
+  width: fit-content;
+}
+
+.label-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label-icon svg {
+  width: 16px;
+  height: 16px;
+  color: white;
 }
 
 .content-preview p {
