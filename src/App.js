@@ -1085,9 +1085,9 @@ function App() {
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                   </svg>
                 </div>
-                <h3 className="step-title">Get Instant Results</h3>
+                <h3 className="step-title">Get Professional Results</h3>
                 <p className="step-description">
-                  AI generates professional, ready-to-use content in seconds. Copy, download, or customize as needed.
+                  Advanced AI optimized for real estate generates professional, ready-to-use content in seconds. Copy, download, or customize as needed.
                 </p>
               </div>
             </div>
@@ -1169,10 +1169,10 @@ function App() {
                   <li>All 6 content types</li>
                   <li>Priority generation speed</li>
                   <li>Priority phone & email support</li>
-                  <li>Team collaboration</li>
-                  <li>Custom branding</li>
-                  <li>Advanced analytics</li>
-                  <li>API access</li>
+                  <li>Content history</li>
+                  <li>Export to multiple formats</li>
+                  <li>Perfect for high-volume agents</li>
+                  <li>Ideal for busy real estate teams</li>
                 </ul>
                 <button 
                   className="pricing-cta"
@@ -1206,7 +1206,7 @@ function App() {
               <div className="faq-item">
                 <h3 className="faq-question">How accurate is the AI-generated content?</h3>
                 <p className="faq-answer">
-                  Our AI is trained specifically on real estate content and produces professional-quality descriptions that you can use immediately or customize as needed.
+                  Our platform uses advanced AI with specialized prompts optimized for real estate content, producing professional-quality descriptions that you can use immediately or customize as needed.
                 </p>
               </div>
 
@@ -1239,9 +1239,9 @@ function App() {
               </div>
 
               <div className="faq-item">
-                <h3 className="faq-question">Do you offer team features?</h3>
+                <h3 className="faq-question">What's the difference between Professional and Agency plans?</h3>
                 <p className="faq-answer">
-                  Our Agency plan includes team collaboration features, custom branding, and advanced analytics perfect for real estate teams and brokerages.
+                  The Professional plan includes 100 AI generations per month, while the Agency plan offers unlimited generations - perfect for high-volume agents and busy real estate teams.
                 </p>
               </div>
             </div>
@@ -1370,8 +1370,8 @@ const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
           </h2>
           <p className="auth-modal-subtitle">
             {mode === 'signin' 
-              ? 'Sign in to continue generating professional content'
-              : 'Start creating professional real estate content with AI'
+              ? 'Sign in to continue creating professional content'
+              : 'Start generating professional real estate content'
             }
           </p>
           <button className="auth-modal-close" onClick={onClose}>
@@ -1589,12 +1589,12 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
         'All 6 content types',
         'Priority generation speed',
         'Priority support',
-        'Team collaboration',
-        'Custom branding',
-        'Advanced analytics',
-        'API access'
+        'Content history',
+        'Export to multiple formats',
+        'Perfect for high-volume agents',
+        'Ideal for busy real estate teams'
       ],
-      description: 'Ideal for teams and agencies'
+      description: 'Ideal for high-volume agents and teams'
     }
   ];
 
