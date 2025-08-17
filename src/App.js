@@ -1,7 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import { useFirebase } from './firebase/FirebaseContext';
 
 function App() {
+  // Firebase integration
+  const { 
+    user, 
+    userProfile, 
+    loading: authLoading, 
+    canGenerate, 
+    getRemainingGenerations,
+    trackGeneration 
+  } = useFirebase();
+
   // State management
   const [propertyData, setPropertyData] = useState({
     address: '',
@@ -43,6 +54,9 @@ function App() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isFormValid, setIsFormValid] = useState(false);
   const [generationHistory, setGenerationHistory] = useState([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   const headerRef = useRef(null);
   const formRef = useRef(null);
@@ -178,8 +192,22 @@ function App() {
     }));
   };
 
-  // Enhanced content generation
+  // Enhanced content generation with Firebase tracking
   const generateContent = async () => {
+    // Check if user is authenticated and can generate
+    if (!user) {
+      setShowAuthModal(true);
+      setAuthMode('signup');
+      showNotification('Please sign up to generate content', 'info');
+      return;
+    }
+
+    if (!canGenerate()) {
+      setShowUpgradeModal(true);
+      showNotification('You\'ve reached your generation limit. Upgrade for more!', 'warning');
+      return;
+    }
+
     setIsGenerating(true);
     setError('');
     
@@ -206,23 +234,36 @@ function App() {
       }
 
       const generationTime = ((Date.now() - startTime) / 1000).toFixed(1);
-      setGeneratedContent(data.content || data.description);
-      setGeneratedCount(prev => prev + 1);
+      const content = data.content || data.description;
+      setGeneratedContent(content);
       
-      // Add to generation history
-      const historyItem = {
-        id: Date.now(),
-        type: contentType,
-        content: data.content || data.description,
-        timestamp: new Date(),
-        generationTime: generationTime
-      };
-      setGenerationHistory(prev => [historyItem, ...prev.slice(0, 4)]);
+      // Track generation in Firebase
+      const trackResult = await trackGeneration(contentType, content, propertyData);
       
-      showNotification(
-        `${currentContentType.name} generated in ${generationTime}s!`,
-        'success'
-      );
+      if (trackResult.success) {
+        setGeneratedCount(prev => prev + 1);
+        
+        // Add to generation history
+        const historyItem = {
+          id: Date.now(),
+          type: contentType,
+          content: content,
+          timestamp: new Date(),
+          generationTime: generationTime
+        };
+        setGenerationHistory(prev => [historyItem, ...prev.slice(0, 4)]);
+        
+        const remaining = getRemainingGenerations();
+        const remainingText = remaining === -1 ? 'unlimited' : remaining;
+        
+        showNotification(
+          `${currentContentType.name} generated in ${generationTime}s! ${remainingText} remaining.`,
+          'success'
+        );
+      } else if (trackResult.needsUpgrade) {
+        setShowUpgradeModal(true);
+        showNotification('Upgrade needed for more generations!', 'warning');
+      }
       
     } catch (err) {
       console.error('API Error:', err);
@@ -313,14 +354,46 @@ function App() {
             </div>
             
             <div className="header-stats">
-              <div className="stat-card">
-                <div className="stat-value">{generatedCount}</div>
-                <div className="stat-label">Generated</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-value">{generationHistory.length}</div>
-                <div className="stat-label">Recent</div>
-              </div>
+              {user && userProfile ? (
+                <>
+                  <div className="stat-card">
+                    <div className="stat-value">{userProfile.usageCount || 0}</div>
+                    <div className="stat-label">Used</div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-value">
+                      {getRemainingGenerations() === -1 ? '∞' : getRemainingGenerations()}
+                    </div>
+                    <div className="stat-label">Remaining</div>
+                  </div>
+                  <div className="user-menu">
+                    <div className="user-avatar">
+                      {userProfile.displayName ? userProfile.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="auth-buttons">
+                  <button 
+                    className="auth-btn signin-btn"
+                    onClick={() => {
+                      setAuthMode('signin');
+                      setShowAuthModal(true);
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button 
+                    className="auth-btn signup-btn"
+                    onClick={() => {
+                      setAuthMode('signup');
+                      setShowAuthModal(true);
+                    }}
+                  >
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
