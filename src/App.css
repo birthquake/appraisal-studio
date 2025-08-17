@@ -1,35 +1,3 @@
-.auth-buttons {
-    flex-direction: column;
-    gap: var(--space-sm);
-  }
-  
-  .auth-modal {
-    padding: var(--space-lg);
-    width: 95%;
-  }
-  
-  .upgrade-modal {
-    padding: var(--space-lg);
-    width: 98%;
-  }
-  
-  .pricing-cards {
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-  }
-  
-  .security-badges {
-    flex-direction: column;
-    gap: var(--space-md);
-    align-items: center;
-  }
-  
-  .upgrade-modal-header {
-    flex-direction: column;
-    gap: var(--space-md);
-    text-align: center;
-  }/* Stunning Premium CSS - Cutting Edge Design System */
-
 /* Import premium font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -252,24 +220,57 @@ body {
 }
 
 .notification-icon {
-  font-size: 1.25rem;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.notification-success .notification-icon svg {
+  color: #22c55e;
+}
+
+.notification-error .notification-icon svg {
+  color: #ef4444;
+}
+
+.notification-info .notification-icon svg {
+  color: #3b82f6;
 }
 
 .notification-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: var(--text-tertiary);
   cursor: pointer;
   padding: var(--space-xs);
   border-radius: var(--radius-sm);
   transition: var(--transition-fast);
   margin-left: auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .notification-close:hover {
   background: rgba(0, 0, 0, 0.1);
+}
+
+.notification-close svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+}
+
+.notification-close:hover svg {
   color: var(--text-primary);
 }
 
@@ -1283,7 +1284,16 @@ body {
 }
 
 .badge-icon {
-  font-size: 1rem;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-icon svg {
+  width: 14px;
+  height: 14px;
 }
 
 .content-display {
@@ -1692,6 +1702,11 @@ body {
   animation: spin 1s linear infinite;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .forgot-password-btn {
   background: none;
   border: none;
@@ -1755,6 +1770,13 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.benefit-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--text-primary);
 }
 
 /* Upgrade Modal Styles */
@@ -2024,29 +2046,7 @@ body {
 .security-badge svg {
   width: 20px;
   height: 20px;
-  color: var(--success-gradient);
-}
-
-.testimonial {
-  text-align: center;
-  background: var(--bg-secondary);
-  padding: var(--space-xl);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-}
-
-.testimonial blockquote {
-  font-size: 1.1rem;
-  font-style: italic;
-  color: var(--text-primary);
-  margin-bottom: var(--space-md);
-  line-height: 1.6;
-}
-
-.testimonial cite {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  font-weight: 500;
+  color: #22c55e;
 }
 
 @media (max-width: 768px) {
@@ -2124,6 +2124,38 @@ body {
     left: var(--space-md);
     right: var(--space-md);
     min-width: auto;
+  }
+  
+  .auth-buttons {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .auth-modal {
+    padding: var(--space-lg);
+    width: 95%;
+  }
+  
+  .upgrade-modal {
+    padding: var(--space-lg);
+    width: 98%;
+  }
+  
+  .pricing-cards {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+  
+  .security-badges {
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  
+  .upgrade-modal-header {
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: center;
   }
 }
 
