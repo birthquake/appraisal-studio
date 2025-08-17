@@ -1307,9 +1307,10 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
               <span>Money Back Guarantee</span>
             </div>
           </div>
-
-                  </div>
+        </div>
       </div>
     </div>
   );
 };
+
+export default App;
