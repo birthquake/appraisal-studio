@@ -1554,12 +1554,17 @@ const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   );
 };
 
-// UpgradeModal Component with Real Stripe Integration (same as before)
+// UpgradeModal Component with Full Debugging
 const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
   const { user } = useFirebase();
   const [selectedPlan, setSelectedPlan] = useState('professional');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
+
+  // 🐛 DEBUG: Track selectedPlan state changes
+  useEffect(() => {
+    console.log('🎯 selectedPlan changed to:', selectedPlan);
+  }, [selectedPlan]);
 
   const plans = [
     {
@@ -1598,45 +1603,83 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
     }
   ];
 
+  // 🐛 DEBUG: Enhanced handleUpgrade with full debugging
   const handleUpgrade = async (planId) => {
+    console.log('🚀 handleUpgrade called with planId:', planId);
+    console.log('🎯 Current selectedPlan state:', selectedPlan);
+    console.log('👤 User object:', user ? { uid: user.uid, email: user.email } : 'No user');
+
     if (!user) {
+      console.log('❌ No user found, showing sign in prompt');
       showNotification('Please sign in first', 'error');
       return;
     }
 
     setIsProcessing(true);
     setError('');
+    console.log('⏳ Starting checkout process...');
 
     try {
+      const requestData = {
+        planId: planId,
+        userId: user.uid,
+        userEmail: user.email,
+        returnUrl: window.location.origin
+      };
+      console.log('📤 Sending request to API:', requestData);
+
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          planId: planId,
-          userId: user.uid,
-          userEmail: user.email,
-          returnUrl: window.location.origin
-        }),
+        body: JSON.stringify(requestData),
       });
 
+      console.log('📥 API Response status:', response.status);
+      console.log('📥 API Response headers:', Object.fromEntries(response.headers.entries()));
+
       const data = await response.json();
+      console.log('📄 API Response data:', data);
 
       if (!response.ok) {
+        console.log('❌ API Response not ok:', response.status, data);
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
+      console.log('✅ Checkout session created, redirecting to:', data.url);
       // Redirect to Stripe Checkout
       window.location.href = data.url;
       
     } catch (err) {
-      console.error('Upgrade error:', err);
+      console.error('💥 Upgrade error details:', {
+        message: err.message,
+        stack: err.stack,
+        error: err
+      });
       setError(err.message || 'Failed to start checkout process');
       showNotification('Upgrade failed. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
+      console.log('🏁 handleUpgrade finished, processing set to false');
     }
+  };
+
+  // 🐛 DEBUG: Card click handler with debugging
+  const handleCardClick = (planId) => {
+    console.log('🖱️ Card clicked for plan:', planId);
+    console.log('🔄 Current selectedPlan before change:', selectedPlan);
+    setSelectedPlan(planId);
+    console.log('✅ setSelectedPlan called with:', planId);
+  };
+
+  // 🐛 DEBUG: Button click handler with debugging  
+  const handleButtonClick = async (e, planId) => {
+    e.stopPropagation();
+    console.log('🔘 Button clicked for plan:', planId);
+    console.log('🎯 Current selectedPlan state at button click:', selectedPlan);
+    console.log('🎯 About to call handleUpgrade with planId:', planId);
+    await handleUpgrade(planId);
   };
 
   const handleManageBilling = async () => {
@@ -1740,7 +1783,8 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
               <div 
                 key={plan.id}
                 className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
-                onClick={() => setSelectedPlan(plan.id)}
+                onClick={() => handleCardClick(plan.id)}
+                style={{ cursor: 'pointer' }}
               >
                 {plan.popular && (
                   <div className="popular-badge">
@@ -1775,10 +1819,7 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
 
                 <button 
                   className={`plan-select-btn ${selectedPlan === plan.id ? 'selected' : ''} ${isProcessing ? 'processing' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUpgrade(plan.id);
-                  }}
+                  onClick={(e) => handleButtonClick(e, plan.id)}
                   disabled={isProcessing}
                 >
                   {isProcessing && selectedPlan === plan.id ? (
