@@ -10,7 +10,8 @@ function App() {
     loading: authLoading, 
     canGenerate, 
     getRemainingGenerations,
-    trackGeneration 
+    trackGeneration,
+    signOut
   } = useFirebase();
 
   // State management
@@ -59,17 +60,26 @@ function App() {
   const [authMode, setAuthMode] = useState('signin');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   
   const headerRef = useRef(null);
   const formRef = useRef(null);
 
-  // Navigation items
-  const navigationItems = [
+  // Navigation items - conditional based on authentication
+  const unauthenticatedNavigationItems = [
     { id: 'home', label: 'Home', href: '#home' },
     { id: 'how-it-works', label: 'How It Works', href: '#how-it-works' },
     { id: 'pricing', label: 'Pricing', href: '#pricing' },
     { id: 'faq', label: 'FAQ', href: '#faq' },
   ];
+
+  const authenticatedNavigationItems = [
+    { id: 'home', label: 'Generate', href: '#home' },
+    { id: 'pricing', label: 'Account', href: '#pricing' },
+  ];
+
+  // Use the appropriate navigation based on authentication
+  const navigationItems = user ? authenticatedNavigationItems : unauthenticatedNavigationItems;
 
   // Enhanced content types with premium styling
   const contentTypes = [
@@ -179,6 +189,18 @@ function App() {
   useEffect(() => {
     setIsFormValid(propertyData.address.trim() && propertyData.price.trim());
   }, [propertyData.address, propertyData.price]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownOpen && !event.target.closest('.user-nav')) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userDropdownOpen]);
 
   // Navigation handler
   const handleNavigation = (sectionId) => {
@@ -326,6 +348,17 @@ function App() {
     showNotification('Content downloaded successfully!', 'success', 2000);
   };
 
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setUserDropdownOpen(false);
+      showNotification('Signed out successfully', 'success');
+    } catch (error) {
+      showNotification('Error signing out', 'error');
+    }
+  };
+
   // Get current content type
   const currentContentType = contentTypes.find(type => type.id === contentType);
 
@@ -419,8 +452,75 @@ function App() {
                     {getRemainingGenerations() === -1 ? '∞' : getRemainingGenerations()} left
                   </span>
                 </div>
-                <div className="user-avatar">
-                  {userProfile.displayName ? userProfile.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                <div className="user-dropdown-container">
+                  <button 
+                    className="user-avatar"
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  >
+                    {userProfile.displayName ? userProfile.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                  </button>
+                  {userDropdownOpen && (
+                    <div className="user-dropdown">
+                      <div className="dropdown-header">
+                        <div className="user-info">
+                          <div className="user-name">
+                            {userProfile.displayName || user.email}
+                          </div>
+                          <div className="user-email">
+                            {user.email}
+                          </div>
+                          <div className="user-plan">
+                            {userProfile.planType || 'Free'} Plan
+                          </div>
+                        </div>
+                      </div>
+                      <div className="dropdown-divider"></div>
+                      <div className="dropdown-actions">
+                        <button 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            handleNavigation('pricing');
+                          }}
+                        >
+                          <div className="dropdown-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                              <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                          </div>
+                          <span>Account & Billing</span>
+                        </button>
+                        <button 
+                          className="dropdown-item"
+                          onClick={() => {
+                            setUserDropdownOpen(false);
+                            setShowUpgradeModal(true);
+                          }}
+                        >
+                          <div className="dropdown-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                          </div>
+                          <span>Upgrade Plan</span>
+                        </button>
+                        <button 
+                          className="dropdown-item sign-out"
+                          onClick={handleSignOut}
+                        >
+                          <div className="dropdown-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                              <polyline points="16,17 21,12 16,7"/>
+                              <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                          </div>
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
@@ -503,34 +603,20 @@ function App() {
 
       {/* Main content */}
       <main className="main">
-        {/* Home Section */}
-        <section id="home" className="hero-section">
-          <div className="container">
-            <div className="hero-content">
-              <h1 className="hero-title">
-                Transform Property Details Into 
-                <span className="gradient-text"> Professional Content</span>
-              </h1>
-              <p className="hero-subtitle">
-                Enter your property information once, then generate unlimited marketing content 
-                with AI-powered precision in seconds
-              </p>
-              <div className="hero-cta">
-                {user ? (
-                  <button 
-                    className="cta-button primary"
-                    onClick={() => {
-                      const formSection = document.querySelector('.form-section');
-                      formSection?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                  >
-                    <span>Start Generating</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                      <polyline points="12,5 19,12 12,19"></polyline>
-                    </svg>
-                  </button>
-                ) : (
+        {/* Home Section - Show only for non-authenticated users */}
+        {!user && (
+          <section id="home" className="hero-section">
+            <div className="container">
+              <div className="hero-content">
+                <h1 className="hero-title">
+                  Transform Property Details Into 
+                  <span className="gradient-text"> Professional Content</span>
+                </h1>
+                <p className="hero-subtitle">
+                  Enter your property information once, then generate unlimited marketing content 
+                  with AI-powered precision in seconds
+                </p>
+                <div className="hero-cta">
                   <button 
                     className="cta-button primary"
                     onClick={() => {
@@ -544,22 +630,22 @@ function App() {
                       <polyline points="12,5 19,12 12,19"></polyline>
                     </svg>
                   </button>
-                )}
-                <button 
-                  className="cta-button secondary"
-                  onClick={() => handleNavigation('how-it-works')}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polygon points="5,3 19,12 5,21"/>
-                  </svg>
-                  <span>See How It Works</span>
-                </button>
+                  <button 
+                    className="cta-button secondary"
+                    onClick={() => handleNavigation('how-it-works')}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polygon points="5,3 19,12 5,21"/>
+                    </svg>
+                    <span>See How It Works</span>
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Generator Form Section */}
+        {/* Generator Form Section - Show only for authenticated users */}
         {user && (
           <div className="form-section" ref={formRef}>
             <div className="container">
@@ -1038,215 +1124,226 @@ function App() {
           </div>
         )}
 
-        {/* How It Works Section */}
-        <section id="how-it-works" className="how-it-works-section">
-          <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">How It Works</h2>
-              <p className="section-subtitle">
-                Generate professional real estate content in three simple steps
-              </p>
-            </div>
-
-            <div className="steps-grid">
-              <div className="step-card">
-                <div className="step-number">1</div>
-                <div className="step-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                    <polyline points="9,22 9,12 15,12 15,22"/>
-                  </svg>
-                </div>
-                <h3 className="step-title">Enter Property Details</h3>
-                <p className="step-description">
-                  Add your property information once - address, price, features, and any special details that make it unique.
+        {/* How It Works Section - Show only for non-authenticated users */}
+        {!user && (
+          <section id="how-it-works" className="how-it-works-section">
+            <div className="container">
+              <div className="section-header">
+                <h2 className="section-title">How It Works</h2>
+                <p className="section-subtitle">
+                  Generate professional real estate content in three simple steps
                 </p>
               </div>
 
-              <div className="step-card">
-                <div className="step-number">2</div>
-                <div className="step-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
-                  </svg>
+              <div className="steps-grid">
+                <div className="step-card">
+                  <div className="step-number">1</div>
+                  <div className="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                      <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                  </div>
+                  <h3 className="step-title">Enter Property Details</h3>
+                  <p className="step-description">
+                    Add your property information once - address, price, features, and any special details that make it unique.
+                  </p>
                 </div>
-                <h3 className="step-title">Choose Content Type</h3>
-                <p className="step-description">
-                  Select from 6 professional formats: MLS descriptions, social posts, email templates, and more.
-                </p>
-              </div>
 
-              <div className="step-card">
-                <div className="step-number">3</div>
-                <div className="step-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                  </svg>
+                <div className="step-card">
+                  <div className="step-number">2</div>
+                  <div className="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                  </div>
+                  <h3 className="step-title">Choose Content Type</h3>
+                  <p className="step-description">
+                    Select from 6 professional formats: MLS descriptions, social posts, email templates, and more.
+                  </p>
                 </div>
-                <h3 className="step-title">Get Professional Results</h3>
-                <p className="step-description">
-                  Advanced AI optimized for real estate generates professional, ready-to-use content in seconds. Copy, download, or customize as needed.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="pricing-section">
-          <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">Simple, Transparent Pricing</h2>
-              <p className="section-subtitle">
-                Choose the plan that fits your business needs
-              </p>
-            </div>
-
-            <div className="pricing-cards-container">
-              <div className="pricing-card free">
-                <h3 className="pricing-plan-name">Free Trial</h3>
-                <div className="pricing-price">
-                  <span className="price-amount">$0</span>
-                  <span className="price-period">forever</span>
+                <div className="step-card">
+                  <div className="step-number">3</div>
+                  <div className="step-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                  </div>
+                  <h3 className="step-title">Get Professional Results</h3>
+                  <p className="step-description">
+                    Advanced AI optimized for real estate generates professional, ready-to-use content in seconds. Copy, download, or customize as needed.
+                  </p>
                 </div>
-                <ul className="pricing-features">
-                  <li>5 AI generations</li>
-                  <li>All 6 content types</li>
-                  <li>Basic generation speed</li>
-                  <li>Email support</li>
-                </ul>
-                <button 
-                  className="pricing-cta"
-                  onClick={() => {
-                    setAuthMode('signup');
-                    setShowAuthModal(true);
-                  }}
-                >
-                  Get Started
-                </button>
-              </div>
-
-              <div className="pricing-card professional popular">
-                <div className="popular-badge">Most Popular</div>
-                <h3 className="pricing-plan-name">Professional</h3>
-                <div className="pricing-price">
-                  <span className="price-amount">$49</span>
-                  <span className="price-period">/month</span>
-                </div>
-                <ul className="pricing-features">
-                  <li>100 AI generations/month</li>
-                  <li>All 6 content types</li>
-                  <li>Priority generation speed</li>
-                  <li>Priority email support</li>
-                  <li>Content history</li>
-                  <li>Export to multiple formats</li>
-                </ul>
-                <button 
-                  className="pricing-cta"
-                  onClick={() => {
-                    if (user) {
-                      setShowUpgradeModal(true);
-                    } else {
-                      setAuthMode('signup');
-                      setShowAuthModal(true);
-                    }
-                  }}
-                >
-                  {user ? 'Upgrade Now' : 'Start Free Trial'}
-                </button>
-              </div>
-
-              <div className="pricing-card agency">
-                <h3 className="pricing-plan-name">Agency</h3>
-                <div className="pricing-price">
-                  <span className="price-amount">$99</span>
-                  <span className="price-period">/month</span>
-                </div>
-                <ul className="pricing-features">
-                  <li>Unlimited AI generations</li>
-                  <li>All 6 content types</li>
-                  <li>Priority generation speed</li>
-                  <li>Priority phone & email support</li>
-                  <li>Content history</li>
-                  <li>Export to multiple formats</li>
-                  <li>Perfect for high-volume agents</li>
-                  <li>Ideal for busy real estate teams</li>
-                </ul>
-                <button 
-                  className="pricing-cta"
-                  onClick={() => {
-                    if (user) {
-                      setShowUpgradeModal(true);
-                    } else {
-                      setAuthMode('signup');
-                      setShowAuthModal(true);
-                    }
-                  }}
-                >
-                  {user ? 'Upgrade Now' : 'Start Free Trial'}
-                </button>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* FAQ Section */}
-        <section id="faq" className="faq-section">
-          <div className="container">
-            <div className="section-header">
-              <h2 className="section-title">Frequently Asked Questions</h2>
-              <p className="section-subtitle">
-                Everything you need to know about AppraisalStudio
-              </p>
+        {/* Pricing Section - Show only for non-authenticated users OR when user clicks Account */}
+        {(!user || currentSection === 'pricing') && (
+          <section id="pricing" className="pricing-section">
+            <div className="container">
+              <div className="section-header">
+                <h2 className="section-title">
+                  {user ? 'Account & Billing' : 'Simple, Transparent Pricing'}
+                </h2>
+                <p className="section-subtitle">
+                  {user ? 'Manage your subscription and billing' : 'Choose the plan that fits your business needs'}
+                </p>
+              </div>
+
+              <div className="pricing-cards-container">
+                <div className="pricing-card free">
+                  <h3 className="pricing-plan-name">Free Trial</h3>
+                  <div className="pricing-price">
+                    <span className="price-amount">$0</span>
+                    <span className="price-period">forever</span>
+                  </div>
+                  <ul className="pricing-features">
+                    <li>5 AI generations</li>
+                    <li>All 6 content types</li>
+                    <li>Basic generation speed</li>
+                    <li>Email support</li>
+                  </ul>
+                  <button 
+                    className="pricing-cta"
+                    onClick={() => {
+                      if (!user) {
+                        setAuthMode('signup');
+                        setShowAuthModal(true);
+                      }
+                    }}
+                    disabled={user}
+                  >
+                    {user ? 'Current Plan' : 'Get Started'}
+                  </button>
+                </div>
+
+                <div className="pricing-card professional popular">
+                  <div className="popular-badge">Most Popular</div>
+                  <h3 className="pricing-plan-name">Professional</h3>
+                  <div className="pricing-price">
+                    <span className="price-amount">$49</span>
+                    <span className="price-period">/month</span>
+                  </div>
+                  <ul className="pricing-features">
+                    <li>100 AI generations/month</li>
+                    <li>All 6 content types</li>
+                    <li>Priority generation speed</li>
+                    <li>Priority email support</li>
+                    <li>Content history</li>
+                    <li>Export to multiple formats</li>
+                  </ul>
+                  <button 
+                    className="pricing-cta"
+                    onClick={() => {
+                      if (user) {
+                        setShowUpgradeModal(true);
+                      } else {
+                        setAuthMode('signup');
+                        setShowAuthModal(true);
+                      }
+                    }}
+                  >
+                    {user ? 'Upgrade Now' : 'Start Free Trial'}
+                  </button>
+                </div>
+
+                <div className="pricing-card agency">
+                  <h3 className="pricing-plan-name">Agency</h3>
+                  <div className="pricing-price">
+                    <span className="price-amount">$99</span>
+                    <span className="price-period">/month</span>
+                  </div>
+                  <ul className="pricing-features">
+                    <li>Unlimited AI generations</li>
+                    <li>All 6 content types</li>
+                    <li>Priority generation speed</li>
+                    <li>Priority phone & email support</li>
+                    <li>Content history</li>
+                    <li>Export to multiple formats</li>
+                    <li>Perfect for high-volume agents</li>
+                    <li>Ideal for busy real estate teams</li>
+                  </ul>
+                  <button 
+                    className="pricing-cta"
+                    onClick={() => {
+                      if (user) {
+                        setShowUpgradeModal(true);
+                      } else {
+                        setAuthMode('signup');
+                        setShowAuthModal(true);
+                      }
+                    }}
+                  >
+                    {user ? 'Upgrade Now' : 'Start Free Trial'}
+                  </button>
+                </div>
+              </div>
             </div>
+          </section>
+        )}
 
-            <div className="faq-grid">
-              <div className="faq-item">
-                <h3 className="faq-question">How accurate is the AI-generated content?</h3>
-                <p className="faq-answer">
-                  Our platform uses advanced AI with specialized prompts optimized for real estate content, producing professional-quality descriptions that you can use immediately or customize as needed.
+        {/* FAQ Section - Show only for non-authenticated users */}
+        {!user && (
+          <section id="faq" className="faq-section">
+            <div className="container">
+              <div className="section-header">
+                <h2 className="section-title">Frequently Asked Questions</h2>
+                <p className="section-subtitle">
+                  Everything you need to know about AppraisalStudio
                 </p>
               </div>
 
-              <div className="faq-item">
-                <h3 className="faq-question">Can I edit the generated content?</h3>
-                <p className="faq-answer">
-                  Absolutely! All generated content is fully editable. Use it as-is or customize it to match your specific style and needs.
-                </p>
-              </div>
+              <div className="faq-grid">
+                <div className="faq-item">
+                  <h3 className="faq-question">How accurate is the AI-generated content?</h3>
+                  <p className="faq-answer">
+                    Our platform uses advanced AI with specialized prompts optimized for real estate content, producing professional-quality descriptions that you can use immediately or customize as needed.
+                  </p>
+                </div>
 
-              <div className="faq-item">
-                <h3 className="faq-question">What content types are available?</h3>
-                <p className="faq-answer">
-                  We offer 6 content types: Property descriptions, social media posts, email templates, marketing highlights, just listed announcements, and open house invitations.
-                </p>
-              </div>
+                <div className="faq-item">
+                  <h3 className="faq-question">Can I edit the generated content?</h3>
+                  <p className="faq-answer">
+                    Absolutely! All generated content is fully editable. Use it as-is or customize it to match your specific style and needs.
+                  </p>
+                </div>
 
-              <div className="faq-item">
-                <h3 className="faq-question">Is there a free trial?</h3>
-                <p className="faq-answer">
-                  Yes! Every new account gets 5 free AI generations to try out all our features before upgrading to a paid plan.
-                </p>
-              </div>
+                <div className="faq-item">
+                  <h3 className="faq-question">What content types are available?</h3>
+                  <p className="faq-answer">
+                    We offer 6 content types: Property descriptions, social media posts, email templates, marketing highlights, just listed announcements, and open house invitations.
+                  </p>
+                </div>
 
-              <div className="faq-item">
-                <h3 className="faq-question">Can I cancel anytime?</h3>
-                <p className="faq-answer">
-                  Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
-                </p>
-              </div>
+                <div className="faq-item">
+                  <h3 className="faq-question">Is there a free trial?</h3>
+                  <p className="faq-answer">
+                    Yes! Every new account gets 5 free AI generations to try out all our features before upgrading to a paid plan.
+                  </p>
+                </div>
 
-              <div className="faq-item">
-                <h3 className="faq-question">What's the difference between Professional and Agency plans?</h3>
-                <p className="faq-answer">
-                  The Professional plan includes 100 AI generations per month, while the Agency plan offers unlimited generations - perfect for high-volume agents and busy real estate teams.
-                </p>
+                <div className="faq-item">
+                  <h3 className="faq-question">Can I cancel anytime?</h3>
+                  <p className="faq-answer">
+                    Yes, you can cancel your subscription at any time. You'll continue to have access until the end of your billing period.
+                  </p>
+                </div>
+
+                <div className="faq-item">
+                  <h3 className="faq-question">What's the difference between Professional and Agency plans?</h3>
+                  <p className="faq-answer">
+                    The Professional plan includes 100 AI generations per month, while the Agency plan offers unlimited generations - perfect for high-volume agents and busy real estate teams.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       {/* Authentication Modal */}
