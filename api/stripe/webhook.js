@@ -209,7 +209,7 @@ async function handleSubscriptionCreated(subscription) {
     const updateData = {
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
-      currentPlan: planInfo.plan,
+      plan: planInfo.plan, // 🔧 FIX: Use 'plan' not 'currentPlan'
       usageLimit: planInfo.usageLimit,
       subscriptionCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
       subscriptionCurrentPeriodStart: new Date(subscription.current_period_start * 1000),
@@ -254,7 +254,7 @@ async function handleSubscriptionUpdated(subscription) {
     // Update subscription info
     const updateData = {
       subscriptionStatus: subscription.status,
-      currentPlan: planInfo.plan,
+      plan: planInfo.plan, // 🔧 FIX: Use 'plan' not 'currentPlan'
       usageLimit: planInfo.usageLimit,
       subscriptionCurrentPeriodStart: new Date(subscription.current_period_start * 1000),
       subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
@@ -296,7 +296,7 @@ async function handleSubscriptionDeleted(subscription) {
     // Revert to free plan
     await db.collection('users').doc(firebaseUserId).update({
       subscriptionStatus: 'canceled',
-      currentPlan: 'free',
+      plan: 'free', // 🔧 FIX: Use 'plan' not 'currentPlan'
       usageLimit: 5,
       subscriptionCanceledAt: admin.firestore.FieldValue.serverTimestamp(),
       cancelAtPeriodEnd: false,
