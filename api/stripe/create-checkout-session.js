@@ -126,6 +126,38 @@ export default async function handler(req, res) {
         console.log('✅ Saved customer ID to Firebase');
       } else {
         console.log('✅ Using existing Stripe customer:', customerId);
+        
+        // 🔧 FIX: Check if customer exists in current mode (live vs test)
+        try {
+          await stripe.customers.retrieve(customerId);
+          console.log('✅ Customer exists in current Stripe mode');
+        } catch (customerError) {
+          if (customerError.code === 'resource_missing') {
+            console.log('🔄 Customer exists in different mode, creating new customer for current mode');
+            
+            // Create new customer for current mode (test/live)
+            const customer = await stripe.customers.create({
+              email: userEmail,
+              metadata: {
+                firebaseUserId: userId,
+                planType: planId,
+                originalCustomerId: customerId // Keep reference to original
+              }
+            });
+            
+            customerId = customer.id;
+            console.log('✅ Created new customer for current mode:', customerId);
+            
+            // Update Firebase with new customer ID
+            await db.collection('users').doc(userId).update({
+              stripeCustomerId: customerId,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            });
+            console.log('✅ Updated customer ID in Firebase');
+          } else {
+            throw customerError; // Re-throw if it's a different error
+          }
+        }
       }
 
       // Create Checkout Session
