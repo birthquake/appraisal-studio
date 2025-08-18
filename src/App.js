@@ -1783,7 +1783,11 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
               <div 
                 key={plan.id}
                 className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
-                onClick={() => handleCardClick(plan.id)}
+                onClick={(e) => {
+                  // Only trigger if clicking the card itself, not the button
+                  if (e.target.closest('button')) return;
+                  handleCardClick(plan.id);
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 {plan.popular && (
