@@ -74,20 +74,20 @@ export default async function handler(req, res) {
   }
 }
 
-// System messages for different content types
+// Updated system messages with stronger factual focus
 function getSystemMessage(contentType) {
   const systemMessages = {
-    description: `You are a professional real estate copywriter. Create compelling but factual property descriptions based ONLY on the information provided. Do not make assumptions or add details not specified. Keep descriptions professional, accurate, and engaging for potential buyers.`,
+    description: `You are a professional real estate copywriter. Create accurate, professional property descriptions based ONLY on the information provided. Do not make assumptions, add details not specified, or use exaggerated claims. Keep descriptions factual, compliant, and professional for potential buyers.`,
     
-    social_listing: `You are a social media expert for real estate. Create engaging Facebook/Instagram posts that announce new listings. Use an excited but professional tone, include relevant hashtags, and make it shareable. Focus on what makes this property special.`,
+    social_listing: `You are creating social media posts for real estate listings. Use ONLY the provided property information. Create professional announcements that are factual and engaging without exaggeration. Include relevant hashtags but avoid hype or pressure language.`,
     
-    email_alert: `You are writing professional email templates for real estate agents to send to their client lists. Create clear, informative new listing alerts that provide key details and encourage action. Use a professional but friendly tone.`,
+    email_alert: `You are writing professional email templates for real estate agents. Create clear, factual new listing alerts using only provided details. Use a professional tone and encourage action through factual presentation, not pressure tactics.`,
     
-    marketing_flyer: `You are creating marketing highlights for property flyers and presentations. Focus on the key selling points and features that make this property stand out. Use bullet points and compelling language that emphasizes value.`,
+    marketing_flyer: `You are creating marketing content for property flyers. Focus on the actual features and details provided. Use professional language that highlights factual selling points without exaggerated claims or assumptions about value.`,
     
-    just_listed: `You are creating celebratory "Just Listed" social media posts. Use an exciting, congratulatory tone that builds anticipation. Make it feel like a special announcement that followers will want to share.`,
+    just_listed: `You are creating professional "Just Listed" announcements. Use an upbeat but factual tone that announces the new listing based only on provided information. Avoid exaggerated claims or emotional manipulation.`,
     
-    open_house: `You are writing open house invitation posts. Create welcoming, informative invitations that provide key property highlights and encourage attendance. Include a clear call-to-action to attend.`
+    open_house: `You are writing open house invitations. Create welcoming, factual invitations using only the provided property details. Encourage attendance through professional presentation of actual features, not hype.`
   };
 
   return systemMessages[contentType] || systemMessages.description;
@@ -107,18 +107,18 @@ function getMaxTokens(contentType) {
   return maxTokens[contentType] || 400;
 }
 
-// Temperature settings for different content types
+// Updated temperature settings for more consistent, factual output
 function getTemperature(contentType) {
   const temperatures = {
-    description: 0.7,
-    social_listing: 0.8,
-    email_alert: 0.6,
-    marketing_flyer: 0.7,
-    just_listed: 0.9,
-    open_house: 0.7
+    description: 0.6,      // Reduced from 0.7
+    social_listing: 0.7,   // Reduced from 0.8  
+    email_alert: 0.5,      // Reduced from 0.6
+    marketing_flyer: 0.6,  // Reduced from 0.7
+    just_listed: 0.7,      // Significantly reduced from 0.9
+    open_house: 0.6        // Reduced from 0.7
   };
 
-  return temperatures[contentType] || 0.7;
+  return temperatures[contentType] || 0.6;
 }
 
 // Build content-specific prompts
@@ -265,18 +265,20 @@ function buildBasePropertyInfo(data) {
   return info;
 }
 
-// New prompt builders for different content types
+// Updated prompt builders with stronger factual focus
 function buildSocialListingPrompt(baseInfo) {
   return `${baseInfo}
 
-Create an engaging social media post that:
-1. Announces this new listing with excitement
-2. Highlights 2-3 key selling points
-3. Uses a friendly, professional tone
+Create a professional social media post that:
+1. Announces this new listing using only provided information
+2. Lists 2-3 actual property features (no assumptions)
+3. Uses professional, factual tone
 4. Includes relevant hashtags (3-5)
-5. Encourages engagement and sharing
+5. Encourages engagement through facts, not hype
 6. Is approximately 50-100 words
-7. Makes followers want to learn more`;
+7. Stays compliant with real estate advertising standards
+
+AVOID: Exaggerated claims, assumptions about value, pressure language`;
 }
 
 function buildEmailAlertPrompt(baseInfo) {
@@ -284,53 +286,61 @@ function buildEmailAlertPrompt(baseInfo) {
 
 Create a professional email template that:
 1. Has a clear subject line approach
-2. Provides key property details
-3. Highlights what makes this property special
-4. Includes a clear call-to-action
-5. Uses professional but warm tone
+2. Provides key property details using only provided information
+3. Highlights actual documented property features
+4. Includes a professional call-to-action
+5. Uses factual but warm tone
 6. Is approximately 75-150 words
-7. Encourages recipients to schedule a showing`;
+7. Encourages recipients to schedule a showing through facts
+
+AVOID: Pressure tactics, exaggerated claims, false urgency`;
 }
 
 function buildMarketingFlyerPrompt(baseInfo) {
   return `${baseInfo}
 
 Create marketing highlights that:
-1. List the key selling points in an organized way
-2. Emphasize value and unique features
-3. Use compelling but factual language
-4. Are suitable for flyers or presentations
-5. Focus on what buyers care most about
+1. List actual selling points from provided information only
+2. Use factual, professional language
+3. Present features without exaggerated claims
+4. Are suitable for compliant real estate marketing
+5. Focus on documented property characteristics
 6. Is approximately 50-100 words
-7. Make the property stand out from competition`;
+7. Maintain professional credibility
+
+AVOID: Superlatives, assumptions about investment potential, emotional appeals`;
 }
 
 function buildJustListedPrompt(baseInfo) {
   return `${baseInfo}
 
-Create an exciting "Just Listed" announcement that:
-1. Celebrates the new listing
-2. Builds anticipation and excitement
-3. Highlights 1-2 key features that wow
-4. Uses an enthusiastic but professional tone
-5. Includes relevant hashtags
+Create a professional "Just Listed" announcement that:
+1. Announces the new listing factually
+2. Uses provided information only
+3. Maintains professional, compliant tone
+4. Highlights 1-2 actual documented features
+5. Includes relevant hashtags appropriately
 6. Is approximately 30-75 words
-7. Makes people want to see more immediately`;
+7. Stays within real estate advertising guidelines
+
+AVOID: Excessive excitement, pressure language, unsubstantiated claims`;
 }
 
 function buildOpenHousePrompt(baseInfo) {
   return `${baseInfo}
 
-Create an open house invitation that:
-1. Welcomes potential buyers warmly
-2. Highlights key property features
-3. Creates urgency to attend
-4. Uses an inviting, friendly tone
-5. Includes a clear call-to-action to attend
+Create a professional open house invitation that:
+1. Invites potential buyers using factual information
+2. Highlights actual property features only
+3. Uses welcoming but professional tone
+4. Encourages attendance through facts, not pressure
+5. Includes clear but non-aggressive call-to-action
 6. Is approximately 75-125 words
-7. Makes the open house sound unmissable
+7. Maintains compliance with advertising standards
 
-Note: Do not include specific date/time details - focus on the property appeal and invitation to attend.`;
+AVOID: Pressure tactics, exaggerated claims, artificial urgency
+
+Note: Do not include specific date/time details - focus on factual property presentation.`;
 }
 
 // Your existing helper function (keeping it exactly as is)
