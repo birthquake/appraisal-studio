@@ -334,17 +334,45 @@ async function handlePaymentSucceeded(invoice) {
     const userDoc = userQuery.docs[0];
     const firebaseUserId = userDoc.id;
 
-    // Update payment info
-    await db.collection('users').doc(firebaseUserId).update({
+    // 🔧 FIX: Also get subscription details to update plan info
+    let updateData = {
       lastPaymentSucceeded: admin.firestore.FieldValue.serverTimestamp(),
       lastInvoiceId: invoice.id,
       subscriptionStatus: 'active',
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       // Reset usage count for new billing period
       usageCount: 0
-    });
+    };
 
-    console.log(`✅ Payment succeeded for user: ${firebaseUserId}`);
+    // If this is a subscription payment, update plan details too
+    if (invoice.subscription) {
+      try {
+        const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+        const priceId = subscription.items.data[0]?.price?.id;
+        const planInfo = PLAN_MAPPING[priceId];
+        
+        if (planInfo) {
+          console.log('🔄 Updating plan info from payment:', {
+            priceId: priceId,
+            planInfo: planInfo
+          });
+          
+          // Add plan details to update
+          updateData.plan = planInfo.plan;
+          updateData.usageLimit = planInfo.usageLimit;
+          updateData.subscriptionId = subscription.id;
+          updateData.subscriptionCurrentPeriodStart = new Date(subscription.current_period_start * 1000);
+          updateData.subscriptionCurrentPeriodEnd = new Date(subscription.current_period_end * 1000);
+        }
+      } catch (subError) {
+        console.error('⚠️ Could not retrieve subscription details:', subError.message);
+      }
+    }
+
+    // Update user with payment and plan info
+    await db.collection('users').doc(firebaseUserId).update(updateData);
+
+    console.log(`✅ Payment succeeded for user: ${firebaseUserId}${updateData.plan ? `, plan: ${updateData.plan}` : ''}`);
   } catch (error) {
     console.error('💥 Error handling payment success:', error);
   }
