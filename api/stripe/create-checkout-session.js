@@ -31,8 +31,22 @@ export default async function handler(req, res) {
   try {
     const { planId, userId, userEmail, returnUrl } = req.body;
 
+    // 🐛 DEBUG: Log incoming request
+    console.log('💡 Checkout session request:', { planId, userId, userEmail, returnUrl });
+
+    // 🐛 DEBUG: Check environment variables
+    console.log('🔐 Environment check:', {
+      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      hasProfessionalPrice: !!process.env.STRIPE_PROFESSIONAL_PRICE_ID,
+      hasAgencyPrice: !!process.env.STRIPE_AGENCY_PRICE_ID,
+      hasFirebaseProjectId: !!process.env.FIREBASE_PROJECT_ID,
+      professionalPriceId: process.env.STRIPE_PROFESSIONAL_PRICE_ID,
+      agencyPriceId: process.env.STRIPE_AGENCY_PRICE_ID
+    });
+
     // Validate required fields
     if (!planId || !userId || !userEmail) {
+      console.log('❌ Missing required fields:', { planId, userId, userEmail });
       return res.status(400).json({ 
         error: 'Missing required fields: planId, userId, userEmail' 
       });
@@ -40,24 +54,39 @@ export default async function handler(req, res) {
 
     // Validate plan exists
     if (!PRICE_IDS[planId]) {
+      console.log('❌ Invalid plan ID:', planId, 'Available plans:', Object.keys(PRICE_IDS));
       return res.status(400).json({ 
         error: 'Invalid plan ID. Must be "professional" or "agency"' 
       });
     }
 
+    // Check if price ID is actually set
+    const priceId = PRICE_IDS[planId];
+    if (!priceId) {
+      console.log('❌ Price ID not found for plan:', planId);
+      return res.status(500).json({ 
+        error: `Price ID not configured for ${planId} plan. Please check environment variables.` 
+      });
+    }
+
+    console.log('✅ Using price ID:', priceId, 'for plan:', planId);
+
     // Get user data from Firebase to ensure they exist
+    console.log('🔍 Looking up user in Firebase:', userId);
     const userDoc = await db.collection('users').doc(userId).get();
     if (!userDoc.exists) {
+      console.log('❌ User not found in Firebase:', userId);
       return res.status(404).json({ error: 'User not found' });
     }
 
     const userData = userDoc.data();
-    const priceId = PRICE_IDS[planId];
+    console.log('✅ User found:', { email: userData.email, hasCustomerId: !!userData.stripeCustomerId });
 
     // Create or retrieve Stripe customer
     let customerId = userData.stripeCustomerId;
     
     if (!customerId) {
+      console.log('🆕 Creating new Stripe customer for:', userEmail);
       // Create new Stripe customer
       const customer = await stripe.customers.create({
         email: userEmail,
@@ -68,15 +97,20 @@ export default async function handler(req, res) {
       });
       
       customerId = customer.id;
+      console.log('✅ Created Stripe customer:', customerId);
       
       // Save customer ID to Firebase
       await db.collection('users').doc(userId).update({
         stripeCustomerId: customerId,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       });
+      console.log('✅ Saved customer ID to Firebase');
+    } else {
+      console.log('✅ Using existing Stripe customer:', customerId);
     }
 
     // Create Checkout Session
+    console.log('🛒 Creating Stripe checkout session...');
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       payment_method_types: ['card'],
@@ -115,6 +149,8 @@ export default async function handler(req, res) {
       }
     });
 
+    console.log('✅ Checkout session created:', session.id);
+
     // Log checkout attempt
     await db.collection('stripe_events').add({
       type: 'checkout_session_created',
@@ -125,14 +161,24 @@ export default async function handler(req, res) {
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Return checkout URL
+    console.log('✅ Logged checkout attempt to Firebase');
+
+    // 🔧 FIX: Return 'url' instead of 'checkoutUrl' to match frontend expectation
     res.status(200).json({ 
-      checkoutUrl: session.url,
+      url: session.url,        // ← FIXED: Frontend expects 'url'
       sessionId: session.id 
     });
 
+    console.log('✅ Checkout session response sent successfully');
+
   } catch (error) {
-    console.error('Stripe checkout error:', error);
+    console.error('💥 Stripe checkout error details:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+      stack: error.stack
+    });
+    
     res.status(500).json({ 
       error: 'Failed to create checkout session',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
