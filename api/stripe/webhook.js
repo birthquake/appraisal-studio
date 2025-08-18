@@ -6,11 +6,23 @@ const admin = require('firebase-admin');
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
+  // 🔧 FIX: Use individual environment variables (same as checkout session)
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY_RAW 
+    ? process.env.FIREBASE_PRIVATE_KEY_RAW.replace(/\\n/g, '\n')
+    : process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
   admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      type: process.env.FIREBASE_TYPE || 'service_account',
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: privateKey,
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: process.env.FIREBASE_AUTH_URI || 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: process.env.FIREBASE_TOKEN_URI || 'https://oauth2.googleapis.com/token',
+      auth_provider_x509_cert_url: process.env.FIREBASE_PROVIDER_CERT_URL || 'https://www.googleapis.com/oauth2/v1/certs',
+      client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
     }),
   });
 }
@@ -67,16 +79,26 @@ export default async function handler(req, res) {
     const rawBody = await getRawBody(req);
     const sig = req.headers['stripe-signature'];
 
+    // 🐛 DEBUG: Enhanced webhook debugging
+    console.log('🎣 Webhook received:', {
+      hasSignature: !!sig,
+      hasSecret: !!endpointSecret,
+      bodyLength: rawBody.length
+    });
+
     // Verify webhook signature
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
+    console.log('✅ Webhook signature verified:', event.type);
 
   } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
+    console.error('❌ Webhook signature verification failed:', err.message);
     return res.status(400).json({ error: 'Webhook signature verification failed' });
   }
 
   // Handle the event
   try {
+    console.log('📥 Processing webhook event:', event.type);
+
     switch (event.type) {
       case 'checkout.session.completed':
         await handleCheckoutCompleted(event.data.object);
@@ -103,7 +125,7 @@ export default async function handler(req, res) {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
 
     // Log webhook event
@@ -115,10 +137,11 @@ export default async function handler(req, res) {
       data: event.data.object
     });
 
+    console.log('✅ Webhook processed successfully:', event.type);
     res.status(200).json({ received: true });
 
   } catch (error) {
-    console.error('Webhook processing error:', error);
+    console.error('💥 Webhook processing error:', error);
     res.status(500).json({ error: 'Webhook processing failed' });
   }
 }
@@ -127,8 +150,14 @@ export default async function handler(req, res) {
 async function handleCheckoutCompleted(session) {
   const firebaseUserId = session.metadata?.firebaseUserId;
   
+  console.log('🎉 Processing checkout completion:', {
+    sessionId: session.id,
+    userId: firebaseUserId,
+    customer: session.customer
+  });
+  
   if (!firebaseUserId) {
-    console.error('No Firebase user ID in checkout session metadata');
+    console.error('❌ No Firebase user ID in checkout session metadata');
     return;
   }
 
@@ -141,9 +170,9 @@ async function handleCheckoutCompleted(session) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    console.log(`Checkout completed for user: ${firebaseUserId}`);
+    console.log(`✅ Checkout completed for user: ${firebaseUserId}`);
   } catch (error) {
-    console.error('Error updating user after checkout:', error);
+    console.error('💥 Error updating user after checkout:', error);
   }
 }
 
@@ -151,8 +180,14 @@ async function handleCheckoutCompleted(session) {
 async function handleSubscriptionCreated(subscription) {
   const firebaseUserId = subscription.metadata?.firebaseUserId;
   
+  console.log('🆕 Processing subscription creation:', {
+    subscriptionId: subscription.id,
+    userId: firebaseUserId,
+    status: subscription.status
+  });
+  
   if (!firebaseUserId) {
-    console.error('No Firebase user ID in subscription metadata');
+    console.error('❌ No Firebase user ID in subscription metadata');
     return;
   }
 
@@ -160,13 +195,18 @@ async function handleSubscriptionCreated(subscription) {
     const priceId = subscription.items.data[0]?.price?.id;
     const planInfo = PLAN_MAPPING[priceId];
     
+    console.log('📊 Plan mapping:', {
+      priceId: priceId,
+      planInfo: planInfo
+    });
+    
     if (!planInfo) {
-      console.error('Unknown price ID:', priceId);
+      console.error('❌ Unknown price ID:', priceId);
       return;
     }
 
     // Update user subscription status
-    await db.collection('users').doc(firebaseUserId).update({
+    const updateData = {
       subscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       currentPlan: planInfo.plan,
@@ -174,12 +214,16 @@ async function handleSubscriptionCreated(subscription) {
       subscriptionCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
       subscriptionCurrentPeriodStart: new Date(subscription.current_period_start * 1000),
       subscriptionCurrentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      // Reset usage count for new subscription
+      usageCount: 0
+    };
 
-    console.log(`Subscription created for user: ${firebaseUserId}, plan: ${planInfo.plan}`);
+    await db.collection('users').doc(firebaseUserId).update(updateData);
+
+    console.log(`✅ Subscription created for user: ${firebaseUserId}, plan: ${planInfo.plan}`);
   } catch (error) {
-    console.error('Error updating user subscription:', error);
+    console.error('💥 Error updating user subscription:', error);
   }
 }
 
@@ -187,8 +231,14 @@ async function handleSubscriptionCreated(subscription) {
 async function handleSubscriptionUpdated(subscription) {
   const firebaseUserId = subscription.metadata?.firebaseUserId;
   
+  console.log('📝 Processing subscription update:', {
+    subscriptionId: subscription.id,
+    userId: firebaseUserId,
+    status: subscription.status
+  });
+  
   if (!firebaseUserId) {
-    console.error('No Firebase user ID in subscription metadata');
+    console.error('❌ No Firebase user ID in subscription metadata');
     return;
   }
 
@@ -197,7 +247,7 @@ async function handleSubscriptionUpdated(subscription) {
     const planInfo = PLAN_MAPPING[priceId];
     
     if (!planInfo) {
-      console.error('Unknown price ID:', priceId);
+      console.error('❌ Unknown price ID:', priceId);
       return;
     }
 
@@ -222,9 +272,9 @@ async function handleSubscriptionUpdated(subscription) {
 
     await db.collection('users').doc(firebaseUserId).update(updateData);
 
-    console.log(`Subscription updated for user: ${firebaseUserId}, status: ${subscription.status}`);
+    console.log(`✅ Subscription updated for user: ${firebaseUserId}, status: ${subscription.status}`);
   } catch (error) {
-    console.error('Error updating subscription:', error);
+    console.error('💥 Error updating subscription:', error);
   }
 }
 
@@ -232,8 +282,13 @@ async function handleSubscriptionUpdated(subscription) {
 async function handleSubscriptionDeleted(subscription) {
   const firebaseUserId = subscription.metadata?.firebaseUserId;
   
+  console.log('🗑️ Processing subscription deletion:', {
+    subscriptionId: subscription.id,
+    userId: firebaseUserId
+  });
+  
   if (!firebaseUserId) {
-    console.error('No Firebase user ID in subscription metadata');
+    console.error('❌ No Firebase user ID in subscription metadata');
     return;
   }
 
@@ -249,15 +304,20 @@ async function handleSubscriptionDeleted(subscription) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    console.log(`Subscription canceled for user: ${firebaseUserId}`);
+    console.log(`✅ Subscription canceled for user: ${firebaseUserId}`);
   } catch (error) {
-    console.error('Error handling subscription cancellation:', error);
+    console.error('💥 Error handling subscription cancellation:', error);
   }
 }
 
 // Handle successful payment
 async function handlePaymentSucceeded(invoice) {
   const customerId = invoice.customer;
+  
+  console.log('💰 Processing payment success:', {
+    invoiceId: invoice.id,
+    customerId: customerId
+  });
   
   try {
     // Find user by customer ID
@@ -267,7 +327,7 @@ async function handlePaymentSucceeded(invoice) {
       .get();
 
     if (userQuery.empty) {
-      console.error('No user found for customer:', customerId);
+      console.error('❌ No user found for customer:', customerId);
       return;
     }
 
@@ -279,18 +339,25 @@ async function handlePaymentSucceeded(invoice) {
       lastPaymentSucceeded: admin.firestore.FieldValue.serverTimestamp(),
       lastInvoiceId: invoice.id,
       subscriptionStatus: 'active',
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      // Reset usage count for new billing period
+      usageCount: 0
     });
 
-    console.log(`Payment succeeded for user: ${firebaseUserId}`);
+    console.log(`✅ Payment succeeded for user: ${firebaseUserId}`);
   } catch (error) {
-    console.error('Error handling payment success:', error);
+    console.error('💥 Error handling payment success:', error);
   }
 }
 
 // Handle failed payment
 async function handlePaymentFailed(invoice) {
   const customerId = invoice.customer;
+  
+  console.log('❌ Processing payment failure:', {
+    invoiceId: invoice.id,
+    customerId: customerId
+  });
   
   try {
     // Find user by customer ID
@@ -300,7 +367,7 @@ async function handlePaymentFailed(invoice) {
       .get();
 
     if (userQuery.empty) {
-      console.error('No user found for customer:', customerId);
+      console.error('❌ No user found for customer:', customerId);
       return;
     }
 
@@ -315,8 +382,8 @@ async function handlePaymentFailed(invoice) {
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    console.log(`Payment failed for user: ${firebaseUserId}`);
+    console.log(`✅ Payment failure recorded for user: ${firebaseUserId}`);
   } catch (error) {
-    console.error('Error handling payment failure:', error);
+    console.error('💥 Error handling payment failure:', error);
   }
 }
