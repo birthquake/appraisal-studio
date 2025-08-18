@@ -1673,12 +1673,22 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
     console.log('✅ setSelectedPlan called with:', planId);
   };
 
-  // 🐛 DEBUG: Button click handler with debugging  
+  // 🐛 DEBUG: Button click handler with automatic plan selection
   const handleButtonClick = async (e, planId) => {
     e.stopPropagation();
     console.log('🔘 Button clicked for plan:', planId);
     console.log('🎯 Current selectedPlan state at button click:', selectedPlan);
-    console.log('🎯 About to call handleUpgrade with planId:', planId);
+    
+    // If clicking a different plan, select it first
+    if (selectedPlan !== planId) {
+      console.log('🔄 Auto-selecting plan:', planId);
+      setSelectedPlan(planId);
+      console.log('✅ Plan selection updated to:', planId);
+      return; // Don't proceed to upgrade on first click
+    }
+    
+    // If plan is already selected, proceed with upgrade
+    console.log('🎯 Plan already selected, proceeding with upgrade for:', planId);
     await handleUpgrade(planId);
   };
 
@@ -1783,12 +1793,6 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
               <div 
                 key={plan.id}
                 className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
-                onClick={(e) => {
-                  // Only trigger if clicking the card itself, not the button
-                  if (e.target.closest('button')) return;
-                  handleCardClick(plan.id);
-                }}
-                style={{ cursor: 'pointer' }}
               >
                 {plan.popular && (
                   <div className="popular-badge">
@@ -1831,8 +1835,10 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
                       <div className="processing-spinner"></div>
                       <span>Processing...</span>
                     </div>
+                  ) : selectedPlan === plan.id ? (
+                    'Upgrade Now'
                   ) : (
-                    selectedPlan === plan.id ? 'Choose This Plan' : 'Select Plan'
+                    'Select Plan'
                   )}
                 </button>
               </div>
