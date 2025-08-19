@@ -79,8 +79,10 @@ function App() {
     { id: 'faq', label: 'FAQ', href: '#faq' },
   ];
 
+  // Updated authenticated navigation with separate History section
   const authenticatedNavigationItems = [
     { id: 'home', label: 'Generate', href: '#home' },
+    { id: 'history', label: 'History', href: '#history' },
     { id: 'account', label: 'Account', href: '#account' },
   ];
 
@@ -208,12 +210,18 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [userDropdownOpen]);
 
-  // Handle scrolling to account section after it renders
+  // Handle scrolling to sections after they render
   useEffect(() => {
     if (currentSection === 'account' && user) {
-      // Small delay to ensure the section has rendered
       setTimeout(() => {
         const element = document.getElementById('account');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else if (currentSection === 'history' && user) {
+      setTimeout(() => {
+        const element = document.getElementById('history');
         if (element) {
           element.scrollIntoView({ behavior: 'smooth' });
         }
@@ -258,9 +266,9 @@ function App() {
     }
   }, [user, historyContentType, historySearch]);
 
-  // Load content history when user signs in or navigates to account or when search/filter changes
+  // Load content history when user signs in or navigates to history section or when search/filter changes
   useEffect(() => {
-    if (user && currentSection === 'account') {
+    if (user && currentSection === 'history') {
       loadContentHistory();
     }
   }, [user, currentSection, loadContentHistory]);
@@ -372,8 +380,8 @@ function App() {
           'success'
         );
 
-        // Reload content history if user is on account page
-        if (currentSection === 'account') {
+        // Reload content history if user is on history page
+        if (currentSection === 'history') {
           loadContentHistory();
         }
       } else if (trackResult.needsUpgrade) {
@@ -1235,7 +1243,164 @@ function App() {
           </div>
         )}
 
-        {/* Account Section - Show only for authenticated users */}
+        {/* Content History Section - New dedicated section for authenticated users */}
+        {user && currentSection === 'history' && (
+          <section id="history" className="history-section">
+            <div className="container">
+              <div className="history-header">
+                <h2 className="history-title">Content History</h2>
+                <p className="history-subtitle">
+                  All your generated content across all sessions
+                </p>
+              </div>
+
+              <div className="history-card">
+                <div className="history-controls">
+                  <div className="history-search">
+                    <div className="search-input-wrapper">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search content or property address..."
+                        value={historySearch}
+                        onChange={(e) => setHistorySearch(e.target.value)}
+                        className="search-input"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="history-filter">
+                    <select
+                      value={historyContentType}
+                      onChange={(e) => setHistoryContentType(e.target.value)}
+                      className="filter-select"
+                    >
+                      <option value="all">All Content Types</option>
+                      <option value="description">Property Descriptions</option>
+                      <option value="social_listing">Social Media Posts</option>
+                      <option value="email_alert">Email Templates</option>
+                      <option value="marketing_flyer">Marketing Highlights</option>
+                      <option value="just_listed">Just Listed Posts</option>
+                      <option value="open_house">Open House Invites</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="content-history-list">
+                  {historyLoading ? (
+                    <div className="history-loading">
+                      <div className="loading-spinner">
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                        <div className="spinner-ring"></div>
+                      </div>
+                      <span>Loading your content history...</span>
+                    </div>
+                  ) : contentHistory.length === 0 ? (
+                    <div className="history-empty">
+                      <div className="empty-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14,2 14,8 20,8"/>
+                        </svg>
+                      </div>
+                      <h4>No content history yet</h4>
+                      <p>Your generated content will appear here. Start by creating your first property content!</p>
+                      <button 
+                        className="empty-cta"
+                        onClick={() => handleNavigation('home')}
+                      >
+                        Generate Your First Content
+                      </button>
+                    </div>
+                  ) : (
+                    contentHistory.map((item) => (
+                      <div key={item.id} className="history-item">
+                        <div className="history-item-header">
+                          <div className="item-type">
+                            <div className="type-icon">
+                              {contentTypes.find(type => type.id === item.contentType)?.icon || (
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                </svg>
+                              )}
+                            </div>
+                            <div className="type-info">
+                              <span className="type-name">
+                                {contentTypes.find(type => type.id === item.contentType)?.name || item.contentType}
+                              </span>
+                              <span className="property-address">{item.propertyAddress}</span>
+                            </div>
+                          </div>
+                          <div className="item-meta">
+                            <span className="item-date">
+                              {new Date(item.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className="item-stats">
+                              {item.wordCount} words
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="history-item-content">
+                          <p className="content-preview">
+                            {item.content.length > 200 ? `${item.content.substring(0, 200)}...` : item.content}
+                          </p>
+                        </div>
+
+                        <div className="history-item-actions">
+                          <button
+                            className="history-action-btn copy"
+                            onClick={() => copyHistoryContent(item.content)}
+                            title="Copy to clipboard"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            </svg>
+                            <span>Copy</span>
+                          </button>
+
+                          <button
+                            className="history-action-btn download"
+                            onClick={() => downloadHistoryContent(item.content, item.contentType, item.propertyAddress)}
+                            title="Download as file"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7,10 12,15 17,10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            <span>Download</span>
+                          </button>
+
+                          <button
+                            className="history-action-btn delete"
+                            onClick={() => deleteHistoryItem(item.id)}
+                            title="Delete content"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <polyline points="3,6 5,6 21,6"/>
+                              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/>
+                              <line x1="10" y1="11" x2="10" y2="17"/>
+                              <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Account Section - Cleaned up without Content History */}
         {user && currentSection === 'account' && (
           <section id="account" className="account-section">
             <div className="container">
@@ -1335,9 +1500,9 @@ function App() {
                   </div>
                 </div>
 
-                {/* Billing Information Card */}
+                {/* Billing Information Card - Only show for subscribed users */}
                 {userProfile?.subscriptionStatus === 'active' && (
-                  <div className="account-card">
+                  <div className="account-card billing-card">
                     <div className="card-header">
                       <div className="card-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1412,160 +1577,6 @@ function App() {
                     </div>
                   </div>
                 )}
-
-                {/* Content History Card */}
-                <div className="account-card content-history-card">
-                  <div className="card-header">
-                    <div className="card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <line x1="10" y1="9" x2="8" y2="9"/>
-                      </svg>
-                    </div>
-                    <div className="card-title-section">
-                      <h3 className="card-title">Content History</h3>
-                      <p className="card-subtitle">All your generated content across all sessions</p>
-                    </div>
-                  </div>
-
-                  <div className="content-history-controls">
-                    <div className="history-search">
-                      <div className="search-input-wrapper">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon">
-                          <circle cx="11" cy="11" r="8"/>
-                          <path d="M21 21l-4.35-4.35"/>
-                        </svg>
-                        <input
-                          type="text"
-                          placeholder="Search content or property address..."
-                          value={historySearch}
-                          onChange={(e) => setHistorySearch(e.target.value)}
-                          className="search-input"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="history-filter">
-                      <select
-                        value={historyContentType}
-                        onChange={(e) => setHistoryContentType(e.target.value)}
-                        className="filter-select"
-                      >
-                        <option value="all">All Content Types</option>
-                        <option value="description">Property Descriptions</option>
-                        <option value="social_listing">Social Media Posts</option>
-                        <option value="email_alert">Email Templates</option>
-                        <option value="marketing_flyer">Marketing Highlights</option>
-                        <option value="just_listed">Just Listed Posts</option>
-                        <option value="open_house">Open House Invites</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="content-history-list">
-                    {historyLoading ? (
-                      <div className="history-loading">
-                        <div className="loading-spinner">
-                          <div className="spinner-ring"></div>
-                          <div className="spinner-ring"></div>
-                          <div className="spinner-ring"></div>
-                        </div>
-                        <span>Loading your content history...</span>
-                      </div>
-                    ) : contentHistory.length === 0 ? (
-                      <div className="history-empty">
-                        <div className="empty-icon">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14,2 14,8 20,8"/>
-                          </svg>
-                        </div>
-                        <h4>No content history yet</h4>
-                        <p>Your generated content will appear here. Start by creating your first property content!</p>
-                      </div>
-                    ) : (
-                      contentHistory.map((item) => (
-                        <div key={item.id} className="history-item">
-                          <div className="history-item-header">
-                            <div className="item-type">
-                              <div className="type-icon">
-                                {contentTypes.find(type => type.id === item.contentType)?.icon || (
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                  </svg>
-                                )}
-                              </div>
-                              <div className="type-info">
-                                <span className="type-name">
-                                  {contentTypes.find(type => type.id === item.contentType)?.name || item.contentType}
-                                </span>
-                                <span className="property-address">{item.propertyAddress}</span>
-                              </div>
-                            </div>
-                            <div className="item-meta">
-                              <span className="item-date">
-                                {new Date(item.createdAt).toLocaleDateString()}
-                              </span>
-                              <span className="item-stats">
-                                {item.wordCount} words
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="history-item-content">
-                            <p className="content-preview">
-                              {item.content.length > 200 ? `${item.content.substring(0, 200)}...` : item.content}
-                            </p>
-                          </div>
-
-                          <div className="history-item-actions">
-                            <button
-                              className="history-action-btn copy"
-                              onClick={() => copyHistoryContent(item.content)}
-                              title="Copy to clipboard"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                              </svg>
-                              <span>Copy</span>
-                            </button>
-
-                            <button
-                              className="history-action-btn download"
-                              onClick={() => downloadHistoryContent(item.content, item.contentType, item.propertyAddress)}
-                              title="Download as file"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7,10 12,15 17,10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                              </svg>
-                              <span>Download</span>
-                            </button>
-
-                            <button
-                              className="history-action-btn delete"
-                              onClick={() => deleteHistoryItem(item.id)}
-                              title="Delete content"
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="3,6 5,6 21,6"/>
-                                <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/>
-                                <line x1="10" y1="11" x2="10" y2="17"/>
-                                <line x1="14" y1="11" x2="14" y2="17"/>
-                              </svg>
-                              <span>Delete</span>
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
               </div>
             </div>
           </section>
