@@ -8,37 +8,51 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userId, returnUrl } = req.body;
+    // Debug environment variables FIRST - before any Firebase calls
+    console.log('=== ENVIRONMENT DEBUG ===');
+    console.log('STRIPE_SECRET_KEY exists:', !!process.env.STRIPE_SECRET_KEY);
+    console.log('FIREBASE_TYPE:', process.env.FIREBASE_TYPE);
+    console.log('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
+    console.log('FIREBASE_PRIVATE_KEY_ID exists:', !!process.env.FIREBASE_PRIVATE_KEY_ID);
+    console.log('FIREBASE_PRIVATE_KEY_RAW exists:', !!process.env.FIREBASE_PRIVATE_KEY_RAW);
+    console.log('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+    console.log('FIREBASE_CLIENT_ID exists:', !!process.env.FIREBASE_CLIENT_ID);
+    console.log('FIREBASE_AUTH_URI exists:', !!process.env.FIREBASE_AUTH_URI);
+    console.log('FIREBASE_TOKEN_URI exists:', !!process.env.FIREBASE_TOKEN_URI);
+    console.log('FIREBASE_PROVIDER_CERT_URL exists:', !!process.env.FIREBASE_PROVIDER_CERT_URL);
+    console.log('Admin apps count:', admin.apps.length);
 
-    // Debug logging
-    console.log('Environment check:', {
-      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-      hasProjectId: !!process.env.FIREBASE_PROJECT_ID,
-      hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-      hasPrivateKey: !!process.env.FIREBASE_PRIVATE_KEY,
-      privateKeyLength: process.env.FIREBASE_PRIVATE_KEY?.length,
-      privateKeyStart: process.env.FIREBASE_PRIVATE_KEY?.substring(0, 50),
-      appsLength: admin.apps.length
-    });
+    const { userId, returnUrl } = req.body;
 
     // Validate required fields
     if (!userId) {
       return res.status(400).json({ error: 'Missing required field: userId' });
     }
 
+    // Check if private key exists before trying to use it
+    if (!process.env.FIREBASE_PRIVATE_KEY_RAW) {
+      console.log('ERROR: FIREBASE_PRIVATE_KEY_RAW is undefined');
+      return res.status(500).json({ error: 'Firebase private key not found' });
+    }
+
     // Initialize Firebase Admin if not already initialized
     if (!admin.apps.length) {
       console.log('Initializing Firebase Admin...');
+      
       admin.initializeApp({
         credential: admin.credential.cert({
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          type: process.env.FIREBASE_TYPE,
+          project_id: process.env.FIREBASE_PROJECT_ID,
+          private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+          private_key: process.env.FIREBASE_PRIVATE_KEY_RAW?.replace(/\\n/g, '\n'),
+          client_email: process.env.FIREBASE_CLIENT_EMAIL,
+          client_id: process.env.FIREBASE_CLIENT_ID,
+          auth_uri: process.env.FIREBASE_AUTH_URI,
+          token_uri: process.env.FIREBASE_TOKEN_URI,
+          auth_provider_x509_cert_url: process.env.FIREBASE_PROVIDER_CERT_URL,
         }),
       });
       console.log('Firebase Admin initialized successfully');
-    } else {
-      console.log('Firebase Admin already initialized, apps count:', admin.apps.length);
     }
 
     const db = admin.firestore();
@@ -62,15 +76,6 @@ export default async function handler(req, res) {
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
       return_url: `${returnUrl || process.env.VERCEL_URL || 'http://localhost:3000'}/account`,
-    });
-
-    // Log portal access
-    await db.collection('stripe_events').add({
-      type: 'customer_portal_accessed',
-      userId: userId,
-      customerId: customerId,
-      sessionId: session.id,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     res.status(200).json({ 
