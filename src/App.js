@@ -1267,61 +1267,10 @@ function App() {
                           </span>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Quick Actions Card */}
-                <div className="account-card">
-                  <div className="card-header">
-                    <div className="card-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    </div>
-                    <h3 className="card-title">Quick Actions</h3>
-                  </div>
-                  <div className="card-content">
-                    <div className="quick-actions">
-                      <button 
-                        className="action-btn primary"
-                        onClick={() => setShowUpgradeModal(true)}
-                      >
-                        <div className="action-icon">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                          </svg>
-                        </div>
-                        <div className="action-text">
-                          <div className="action-title">
-                            {userProfile?.subscriptionStatus === 'active' ? 'Manage Plan' : 'Upgrade Plan'}
-                          </div>
-                          <div className="action-subtitle">
-                            {userProfile?.subscriptionStatus === 'active' ? 'Change or cancel subscription' : 'Get unlimited generations'}
-                          </div>
-                        </div>
-                      </button>
-
-                      <button 
-                        className="action-btn secondary"
-                        onClick={() => handleNavigation('home')}
-                      >
-                        <div className="action-icon">
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                            <polyline points="9,22 9,12 15,12 15,22"/>
-                          </svg>
-                        </div>
-                        <div className="action-text">
-                          <div className="action-title">Generate Content</div>
-                          <div className="action-subtitle">Create professional property content</div>
-                        </div>
-                      </button>
-
-                      {userProfile?.subscriptionStatus === 'active' && (
+                      
+                      <div className="billing-actions">
                         <button 
-                          className="action-btn secondary"
+                          className="billing-portal-btn"
                           onClick={async () => {
                             try {
                               const response = await fetch('/api/stripe/customer-portal', {
@@ -1333,45 +1282,38 @@ function App() {
                                 }),
                               });
                               
-                              console.log('Billing portal response status:', response.status);
-                              console.log('Billing portal response ok:', response.ok);
-                              
                               const data = await response.json();
-                              console.log('Billing portal response data:', data);
-                              
-                              if (response.ok) {
-                                console.log('Portal URL:', data.portalUrl);
-                                if (data.portalUrl) {
-                                  window.location.href = data.portalUrl;
-                                } else {
-                                  console.error('No portalUrl in response:', data);
-                                  showNotification('No portal URL received', 'error');
-                                }
+                              if (response.ok && data.portalUrl) {
+                                window.location.href = data.portalUrl;
                               } else {
-                                console.error('API Error:', data);
                                 showNotification('Failed to open billing portal', 'error');
                               }
                             } catch (err) {
-                              console.error('Fetch error:', err);
                               showNotification('Error accessing billing portal', 'error');
                             }
                           }}
                         >
-                          <div className="action-icon">
+                          <div className="portal-btn-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                               <line x1="1" y1="10" x2="23" y2="10"/>
                             </svg>
                           </div>
-                          <div className="action-text">
-                            <div className="action-title">Billing Portal</div>
-                            <div className="action-subtitle">Manage payment & invoices</div>
+                          <div className="portal-btn-content">
+                            <div className="portal-btn-title">Manage Billing</div>
+                            <div className="portal-btn-subtitle">Update payment method, view invoices, cancel subscription</div>
+                          </div>
+                          <div className="portal-btn-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M5 12h14"/>
+                              <path d="M12 5l7 7-7 7"/>
+                            </svg>
                           </div>
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </section>
