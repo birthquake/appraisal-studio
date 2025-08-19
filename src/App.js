@@ -1319,13 +1319,27 @@ function App() {
                                   returnUrl: window.location.origin
                                 }),
                               });
+                              
+                              console.log('Billing portal response status:', response.status);
+                              console.log('Billing portal response ok:', response.ok);
+                              
                               const data = await response.json();
+                              console.log('Billing portal response data:', data);
+                              
                               if (response.ok) {
-                                window.location.href = data.url;
+                                console.log('Portal URL:', data.portalUrl);
+                                if (data.portalUrl) {
+                                  window.location.href = data.portalUrl;
+                                } else {
+                                  console.error('No portalUrl in response:', data);
+                                  showNotification('No portal URL received', 'error');
+                                }
                               } else {
+                                console.error('API Error:', data);
                                 showNotification('Failed to open billing portal', 'error');
                               }
                             } catch (err) {
+                              console.error('Fetch error:', err);
                               showNotification('Error accessing billing portal', 'error');
                             }
                           }}
