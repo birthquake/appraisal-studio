@@ -202,6 +202,19 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [userDropdownOpen]);
 
+  // Handle scrolling to account section after it renders
+  useEffect(() => {
+    if (currentSection === 'account' && user) {
+      // Small delay to ensure the section has rendered
+      setTimeout(() => {
+        const element = document.getElementById('account');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [currentSection, user]);
+
   // Navigation handler
   const handleNavigation = (sectionId) => {
     setCurrentSection(sectionId);
