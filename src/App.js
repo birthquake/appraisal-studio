@@ -617,20 +617,6 @@ function App() {
                           <span>Account Dashboard</span>
                         </button>
                         <button 
-                          className="dropdown-item"
-                          onClick={() => {
-                            setUserDropdownOpen(false);
-                            setShowUpgradeModal(true);
-                          }}
-                        >
-                          <div className="dropdown-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                            </svg>
-                          </div>
-                          <span>Upgrade Plan</span>
-                        </button>
-                        <button 
                           className="dropdown-item sign-out"
                           onClick={handleSignOut}
                         >
@@ -2336,6 +2322,7 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
               <div 
                 key={plan.id}
                 className={`pricing-card ${selectedPlan === plan.id ? 'selected' : ''} ${plan.popular ? 'popular' : ''}`}
+                onClick={() => handleCardClick(plan.id)}
               >
                 {plan.popular && (
                   <div className="popular-badge">
