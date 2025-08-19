@@ -456,7 +456,7 @@ function App() {
 
   // Delete content history item
   const deleteHistoryItem = async (itemId) => {
-    if (!confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
       return;
     }
 
