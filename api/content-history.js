@@ -1,4 +1,28 @@
-// /api/content-history.js
+async function handleGetHistory(req, res) {
+  try {
+    // Import Firebase Admin dynamically
+    const admin = require('firebase-admin');
+    
+    // Debug environment variables (without exposing sensitive data)
+    console.log('🔍 Environment check:');
+    console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Missing');
+    console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? 'Set' : 'Missing');
+    console.log('- FIREBASE_PRIVATE_KEY_RAW:', process.env.FIREBASE_PRIVATE_KEY_RAW ? 'Set (length: ' + process.env.FIREBASE_PRIVATE_KEY_RAW.length + ')' : 'Missing');
+    
+    // Initialize if not already done
+    if (!admin.apps.length) {
+      // Handle the private key formatting
+      let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+      if (privateKey) {
+        // Replace escaped newlines with actual newlines
+        privateKey = privateKey.replace(/\\n/g, '\n');
+        
+        // If it doesn't start with -----BEGIN, it might be base64 encoded
+        if (!privateKey.startsWith('-----BEGIN')) {
+          try {
+            privateKey = Buffer.from(privateKey, 'base64').toString();
+          } catch (e) {
+            console.error('Failed to decode private key from base// /api/content-history.js
 // Simple version that uses basic Firebase Admin setup
 
 export default async function handler(req, res) {
@@ -28,11 +52,27 @@ async function handleGetHistory(req, res) {
     
     // Initialize if not already done
     if (!admin.apps.length) {
+      // Handle the private key formatting - using your actual variable name
+      let privateKey = process.env.FIREBASE_PRIVATE_KEY_RAW;
+      if (privateKey) {
+        // Replace escaped newlines with actual newlines
+        privateKey = privateKey.replace(/\\n/g, '\n');
+        
+        // If it doesn't start with -----BEGIN, it might be base64 encoded
+        if (!privateKey.startsWith('-----BEGIN')) {
+          try {
+            privateKey = Buffer.from(privateKey, 'base64').toString();
+          } catch (e) {
+            console.error('Failed to decode private key from base64');
+          }
+        }
+      }
+
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: process.env.FIREBASE_PROJECT_ID,
           clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+          privateKey: privateKey,
         }),
       });
     }
