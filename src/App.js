@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import { useFirebase } from './firebase/FirebaseContext';
 
@@ -61,6 +61,12 @@ function App() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  
+  // Content History State
+  const [contentHistory, setContentHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyContentType, setHistoryContentType] = useState('all');
   
   const headerRef = useRef(null);
   const formRef = useRef(null);
@@ -215,6 +221,50 @@ function App() {
     }
   }, [currentSection, user]);
 
+  // Load content history from existing "generations" collection
+  const loadContentHistory = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setHistoryLoading(true);
+      const params = new URLSearchParams({
+        userId: user.uid,
+        limit: '50',
+        offset: '0'
+      });
+      
+      if (historyContentType !== 'all') {
+        params.append('contentType', historyContentType);
+      }
+      
+      if (historySearch.trim()) {
+        params.append('search', historySearch.trim());
+      }
+      
+      const response = await fetch(`/api/content-history?${params}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setContentHistory(data.history || []);
+      } else {
+        console.error('Failed to load content history:', data.error);
+        setContentHistory([]);
+      }
+    } catch (error) {
+      console.error('Error loading content history:', error);
+      setContentHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, [user, historyContentType, historySearch]);
+
+  // Load content history when user signs in or navigates to account or when search/filter changes
+  useEffect(() => {
+    if (user && currentSection === 'account') {
+      loadContentHistory();
+    }
+  }, [user, currentSection, loadContentHistory]);
+
   // Navigation handler
   const handleNavigation = (sectionId) => {
     setCurrentSection(sectionId);
@@ -304,7 +354,7 @@ function App() {
       if (trackResult.success) {
         setGeneratedCount(prev => prev + 1);
         
-        // Add to generation history
+        // Add to generation history (session-only for recent items display)
         const historyItem = {
           id: Date.now(),
           type: contentType,
@@ -321,6 +371,11 @@ function App() {
           `${currentContentType.name} generated in ${generationTime}s! ${remainingText} remaining.`,
           'success'
         );
+
+        // Reload content history if user is on account page
+        if (currentSection === 'account') {
+          loadContentHistory();
+        }
       } else if (trackResult.needsUpgrade) {
         setShowUpgradeModal(true);
         showNotification('Upgrade needed for more generations!', 'warning');
@@ -369,6 +424,63 @@ function App() {
       showNotification('Signed out successfully', 'success');
     } catch (error) {
       showNotification('Error signing out', 'error');
+    }
+  };
+
+  // Copy content to clipboard
+  const copyHistoryContent = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      showNotification('Content copied to clipboard!', 'success', 2000);
+    } catch (err) {
+      showNotification('Failed to copy content', 'error', 3000);
+    }
+  };
+
+  // Download content as file
+  const downloadHistoryContent = (content, contentType, propertyAddress) => {
+    const element = document.createElement('a');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const address = propertyAddress.replace(/[^a-zA-Z0-9]/g, '_');
+    const filename = `${contentType}_${address}_${timestamp}.txt`;
+    
+    const file = new Blob([content], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = filename;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    
+    showNotification('Content downloaded successfully!', 'success', 2000);
+  };
+
+  // Delete content history item
+  const deleteHistoryItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/content-history', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: itemId,
+          userId: user.uid
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setContentHistory(prev => prev.filter(item => item.id !== itemId));
+        showNotification('Content deleted successfully', 'success');
+      } else {
+        showNotification('Failed to delete content', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      showNotification('Error deleting content', 'error');
     }
   };
 
@@ -1314,6 +1426,160 @@ function App() {
                     </div>
                   </div>
                 )}
+
+                {/* Content History Card */}
+                <div className="account-card content-history-card">
+                  <div className="card-header">
+                    <div className="card-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <line x1="10" y1="9" x2="8" y2="9"/>
+                      </svg>
+                    </div>
+                    <div className="card-title-section">
+                      <h3 className="card-title">Content History</h3>
+                      <p className="card-subtitle">All your generated content across all sessions</p>
+                    </div>
+                  </div>
+
+                  <div className="content-history-controls">
+                    <div className="history-search">
+                      <div className="search-input-wrapper">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="search-icon">
+                          <circle cx="11" cy="11" r="8"/>
+                          <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search content or property address..."
+                          value={historySearch}
+                          onChange={(e) => setHistorySearch(e.target.value)}
+                          className="search-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="history-filter">
+                      <select
+                        value={historyContentType}
+                        onChange={(e) => setHistoryContentType(e.target.value)}
+                        className="filter-select"
+                      >
+                        <option value="all">All Content Types</option>
+                        <option value="description">Property Descriptions</option>
+                        <option value="social_listing">Social Media Posts</option>
+                        <option value="email_alert">Email Templates</option>
+                        <option value="marketing_flyer">Marketing Highlights</option>
+                        <option value="just_listed">Just Listed Posts</option>
+                        <option value="open_house">Open House Invites</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="content-history-list">
+                    {historyLoading ? (
+                      <div className="history-loading">
+                        <div className="loading-spinner">
+                          <div className="spinner-ring"></div>
+                          <div className="spinner-ring"></div>
+                          <div className="spinner-ring"></div>
+                        </div>
+                        <span>Loading your content history...</span>
+                      </div>
+                    ) : contentHistory.length === 0 ? (
+                      <div className="history-empty">
+                        <div className="empty-icon">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                          </svg>
+                        </div>
+                        <h4>No content history yet</h4>
+                        <p>Your generated content will appear here. Start by creating your first property content!</p>
+                      </div>
+                    ) : (
+                      contentHistory.map((item) => (
+                        <div key={item.id} className="history-item">
+                          <div className="history-item-header">
+                            <div className="item-type">
+                              <div className="type-icon">
+                                {contentTypes.find(type => type.id === item.contentType)?.icon || (
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="type-info">
+                                <span className="type-name">
+                                  {contentTypes.find(type => type.id === item.contentType)?.name || item.contentType}
+                                </span>
+                                <span className="property-address">{item.propertyAddress}</span>
+                              </div>
+                            </div>
+                            <div className="item-meta">
+                              <span className="item-date">
+                                {new Date(item.createdAt).toLocaleDateString()}
+                              </span>
+                              <span className="item-stats">
+                                {item.wordCount} words
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="history-item-content">
+                            <p className="content-preview">
+                              {item.content.length > 200 ? `${item.content.substring(0, 200)}...` : item.content}
+                            </p>
+                          </div>
+
+                          <div className="history-item-actions">
+                            <button
+                              className="history-action-btn copy"
+                              onClick={() => copyHistoryContent(item.content)}
+                              title="Copy to clipboard"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                              </svg>
+                              <span>Copy</span>
+                            </button>
+
+                            <button
+                              className="history-action-btn download"
+                              onClick={() => downloadHistoryContent(item.content, item.contentType, item.propertyAddress)}
+                              title="Download as file"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                              </svg>
+                              <span>Download</span>
+                            </button>
+
+                            <button
+                              className="history-action-btn delete"
+                              onClick={() => deleteHistoryItem(item.id)}
+                              title="Delete content"
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polyline points="3,6 5,6 21,6"/>
+                                <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                              </svg>
+                              <span>Delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </section>
