@@ -1897,6 +1897,7 @@ body {
 .billing-info {
   display: grid;
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .billing-item {
@@ -1920,6 +1921,71 @@ body {
 .billing-value {
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.billing-actions {
+  border-top: 1px solid var(--border-primary);
+  padding-top: 1.5rem;
+}
+
+.billing-portal-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  background: var(--primary-600);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+}
+
+.billing-portal-btn:hover {
+  background: var(--primary-700);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.portal-btn-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.portal-btn-content {
+  flex: 1;
+}
+
+.portal-btn-title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.portal-btn-subtitle {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  line-height: 1.3;
+}
+
+.portal-btn-arrow {
+  width: 20px;
+  height: 20px;
+  opacity: 0.8;
+  transition: var(--transition-fast);
+}
+
+.billing-portal-btn:hover .portal-btn-arrow {
+  transform: translateX(4px);
+  opacity: 1;
 }
 
 /* Quick Actions */
