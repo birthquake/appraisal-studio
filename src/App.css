@@ -306,6 +306,11 @@ body {
   color: var(--primary-700);
 }
 
+/* User Dropdown Styles */
+.user-dropdown-container {
+  position: relative;
+}
+
 .user-avatar {
   width: 40px;
   height: 40px;
@@ -319,10 +324,123 @@ body {
   font-size: 0.875rem;
   cursor: pointer;
   transition: var(--transition-fast);
+  border: none;
 }
 
 .user-avatar:hover {
   transform: scale(1.05);
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: white;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-xl);
+  min-width: 280px;
+  overflow: hidden;
+  z-index: 1001;
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  padding: 1.5rem;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.user-info {
+  text-align: left;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+
+.user-email {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  word-break: break-word;
+}
+
+.user-plan {
+  display: inline-block;
+  background: var(--primary-100);
+  color: var(--primary-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-primary);
+  margin: 0;
+}
+
+.dropdown-actions {
+  padding: 0.5rem;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background: var(--gray-50);
+  color: var(--primary-600);
+}
+
+.dropdown-item.sign-out {
+  color: var(--accent-red);
+}
+
+.dropdown-item.sign-out:hover {
+  background: var(--accent-red);
+  color: white;
+}
+
+.dropdown-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .auth-nav {
@@ -2276,5 +2394,11 @@ body {
   .pricing-card,
   .faq-item {
     padding: 1.5rem;
+  }
+
+  /* Mobile dropdown positioning */
+  .user-dropdown {
+    right: -1rem;
+    min-width: 260px;
   }
 }
