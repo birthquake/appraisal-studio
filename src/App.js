@@ -191,10 +191,21 @@ function App() {
         }),
       });
 
-      const { url } = await response.json();
-      window.location.href = url;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error('No URL returned from customer portal API');
+        alert('Unable to access customer portal. Please try again.');
+      }
     } catch (error) {
       console.error('Error accessing customer portal:', error);
+      alert('Error accessing customer portal. Please try again.');
     }
   };
 
@@ -780,6 +791,40 @@ function App() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Account Actions */}
+                  <div className="quick-actions" style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--gray-200)'}}>
+                    {accountData.hasActiveSubscription ? (
+                      <button onClick={handleManageSubscription} className="action-btn primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="3"/>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        Manage Subscription
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          onClick={() => handleUpgrade('price_1RxaJb4F171I65zZX74WoXNK')}
+                          className="action-btn upgrade"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                          </svg>
+                          Professional - $49/mo
+                        </button>
+                        <button 
+                          onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
+                          className="action-btn upgrade"
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                          </svg>
+                          Agency - $99/mo
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 <div className="account-card">
@@ -815,48 +860,6 @@ function App() {
                       You're approaching your generation limit. Consider upgrading for unlimited access.
                     </div>
                   )}
-                </div>
-
-                <div className="account-card">
-                  <div className="card-header">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect width="20" height="14" x="2" y="5" rx="2"/>
-                      <line x1="2" y1="10" x2="22" y2="10"/>
-                    </svg>
-                    <h3>Subscription Management</h3>
-                  </div>
-                  <div className="quick-actions">
-                    {accountData.hasActiveSubscription ? (
-                      <button onClick={handleManageSubscription} className="action-btn primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="3"/>
-                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                        </svg>
-                        Manage Subscription
-                      </button>
-                    ) : (
-                      <>
-                        <button 
-                          onClick={() => handleUpgrade('price_1RxaJb4F171I65zZX74WoXNK')}
-                          className="action-btn upgrade"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
-                          </svg>
-                          Professional - $49/mo
-                        </button>
-                        <button 
-                          onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
-                          className="action-btn upgrade"
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
-                          </svg>
-                          Agency - $99/mo
-                        </button>
-                      </>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
