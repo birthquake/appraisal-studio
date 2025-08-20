@@ -102,17 +102,11 @@ function App() {
     
     setRecentPropertiesLoading(true);
     try {
-      const response = await fetch('/api/recent-properties', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: user.uid }),
-      });
+      const response = await fetch(`/api/recent-properties?userId=${user.uid}&limit=10`);
 
       if (response.ok) {
-        const properties = await response.json();
-        setRecentProperties(properties);
+        const data = await response.json();
+        setRecentProperties(data.recentProperties || []);
       }
     } catch (error) {
       console.error('Error loading recent properties:', error);
@@ -125,7 +119,37 @@ function App() {
   const handlePropertySelect = (property) => {
     setPropertyData({
       ...propertyData,
-      ...property.propertyData
+      address: property.address,
+      price: property.price,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      sqft: property.sqft,
+      features: property.features,
+      propertyType: property.propertyType,
+      yearBuilt: property.yearBuilt,
+      parking: property.parking,
+      condition: property.condition,
+      lotSize: property.lotSize,
+      neighborhood: property.neighborhood,
+      schoolDistrict: property.schoolDistrict,
+      specialFeatures: property.specialFeatures || {
+        pool: false,
+        fireplace: false,
+        hardwoodFloors: false,
+        updatedKitchen: false,
+        newRoof: false,
+        energyEfficient: false,
+        gourmetKitchen: false,
+        masterSuite: false,
+        walkInCloset: false,
+        deck: false,
+        patio: false,
+        fencedYard: false,
+        twoCarGarage: false,
+        basement: false,
+        attic: false,
+        laundryRoom: false
+      }
     });
     setShowRecentProperties(false);
   };
@@ -296,15 +320,24 @@ function App() {
     setResult('');
 
     try {
-      const requestData = {
-        propertyData,
-        agentData,
-        contentType,
-        userId: user.uid,
-        userEmail: user.email
+      // Map UI content types to API content types
+      const contentTypeMap = {
+        'property_description': 'description',
+        'just_listed': 'just_listed',
+        'open_house': 'open_house',
+        'social_listing': 'social_listing',
+        'email_alert': 'email_alert',
+        'marketing_flyer': 'marketing_flyer'
       };
 
-      const response = await fetch('/api/generate-content', {
+      const apiContentType = contentTypeMap[contentType] || 'description';
+
+      const requestData = {
+        propertyData,
+        contentType: apiContentType
+      };
+
+      const response = await fetch('/api/property', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -315,7 +348,24 @@ function App() {
       const data = await response.json();
 
       if (response.ok) {
-        setResult(data.content);
+        const content = data.content || data.description;
+        setResult(content);
+        
+        // Save to Firebase for history
+        try {
+          await addDoc(collection(db, 'generations'), {
+            userId: user.uid,
+            userEmail: user.email,
+            propertyData,
+            contentType: contentType, // Save original UI content type
+            content: content,
+            timestamp: new Date()
+          });
+        } catch (saveError) {
+          console.error('Error saving to history:', saveError);
+          // Don't fail the whole operation if saving fails
+        }
+        
         // Refresh recent properties after successful generation
         loadRecentProperties();
       } else {
@@ -397,13 +447,9 @@ function App() {
       'property_description': 'Property Description',
       'just_listed': 'Just Listed Post',
       'open_house': 'Open House Invitation',
-      'price_drop': 'Price Drop Alert',
-      'sold_post': 'Sold Post',
-      'coming_soon': 'Coming Soon Post',
-      'agent_bio': 'Agent Bio',
-      'market_update': 'Market Update',
-      'buyer_guide': 'Buyer Guide',
-      'seller_guide': 'Seller Guide'
+      'social_listing': 'Social Media Post',
+      'email_alert': 'Email Alert',
+      'marketing_flyer': 'Marketing Flyer'
     };
     return labels[type] || type;
   };
@@ -954,9 +1000,9 @@ function App() {
                               { value: 'property_description', label: 'Property Description', icon: '🏠' },
                               { value: 'just_listed', label: 'Just Listed Post', icon: '🎉' },
                               { value: 'open_house', label: 'Open House Invitation', icon: '🚪' },
-                              { value: 'price_drop', label: 'Price Drop Alert', icon: '💰' },
-                              { value: 'sold_post', label: 'Sold Post', icon: '✅' },
-                              { value: 'coming_soon', label: 'Coming Soon Post', icon: '⏰' }
+                              { value: 'social_listing', label: 'Social Media Post', icon: '📱' },
+                              { value: 'email_alert', label: 'Email Alert', icon: '📧' },
+                              { value: 'marketing_flyer', label: 'Marketing Flyer', icon: '📄' }
                             ].map((type) => (
                               <label key={type.value} className={`content-type-option ${contentType === type.value ? 'selected' : ''}`}>
                                 <input
@@ -1068,9 +1114,9 @@ function App() {
                       <option value="property_description">Property Descriptions</option>
                       <option value="just_listed">Just Listed Posts</option>
                       <option value="open_house">Open House Invitations</option>
-                      <option value="price_drop">Price Drop Alerts</option>
-                      <option value="sold_post">Sold Posts</option>
-                      <option value="coming_soon">Coming Soon Posts</option>
+                      <option value="social_listing">Social Media Posts</option>
+                      <option value="email_alert">Email Alerts</option>
+                      <option value="marketing_flyer">Marketing Flyers</option>
                     </select>
                   </div>
                 </div>
