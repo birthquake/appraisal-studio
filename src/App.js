@@ -14,8 +14,15 @@ function App() {
     signOut
   } = useFirebase();
 
-  // State management
-  const [currentSection, setCurrentSection] = useState('home');
+  // Enhanced state management with URL navigation
+  const getInitialSection = () => {
+    const hash = window.location.hash.replace('#', '');
+    // Only allow valid sections, default to 'home'
+    const validSections = ['home', 'history', 'account', 'how-it-works', 'pricing', 'faq'];
+    return validSections.includes(hash) ? hash : 'home';
+  };
+
+  const [currentSection, setCurrentSection] = useState(getInitialSection);
   const [propertyData, setPropertyData] = useState({
     address: '',
     price: '',
@@ -180,6 +187,24 @@ function App() {
     }
   ];
 
+  // URL hash navigation management
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const validSections = ['home', 'history', 'account', 'how-it-works', 'pricing', 'faq'];
+      const newSection = validSections.includes(hash) ? hash : 'home';
+      setCurrentSection(newSection);
+    };
+
+    // Listen for hash changes (back/forward buttons)
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Set initial section from URL on load
+    handleHashChange();
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Mouse tracking for interactive effects
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -210,26 +235,19 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [userDropdownOpen]);
 
-  // Handle scrolling to sections after they render
-  useEffect(() => {
-    if (currentSection === 'account' && user) {
-      setTimeout(() => {
-        const element = document.getElementById('account');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    } else if (currentSection === 'history' && user) {
-      setTimeout(() => {
-        const element = document.getElementById('history');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
-  }, [currentSection, user]);
-
   // Load content history from existing "generations" collection
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownOpen && !event.target.closest('.user-nav')) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userDropdownOpen]);
+
+  // Close dropdown when clicking outside
   const loadContentHistory = useCallback(async () => {
     if (!user) return;
     
@@ -273,19 +291,26 @@ function App() {
     }
   }, [user, currentSection, loadContentHistory]);
 
-  // Navigation handler
+  // Enhanced Navigation handler with URL hash support
   const handleNavigation = (sectionId) => {
+    // Update URL hash
+    window.location.hash = sectionId;
+    
+    // Update state (this will be handled by hashchange listener too)
     setCurrentSection(sectionId);
     setMobileMenuOpen(false);
     
-    // Smooth scroll to section
+    // Smooth scroll to section (let browser handle with hash)
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Use timeout to ensure content is rendered first
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 50); // Reduced from 100ms for faster response
     }
   };
 
@@ -500,12 +525,35 @@ function App() {
       '--mouse-x': `${mousePosition.x}%`,
       '--mouse-y': `${mousePosition.y}%`
     }}>
-      {/* Enhanced background effects */}
-      <div className="background-effects">
-        <div className="gradient-orb gradient-orb-1"></div>
-        <div className="gradient-orb gradient-orb-2"></div>
-        <div className="gradient-orb gradient-orb-3"></div>
-      </div>
+      {/* Show loading screen while auth is being determined */}
+      {authLoading && (
+        <div className="auth-loading-screen">
+          <div className="auth-loading-content">
+            <div className="brand-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+              </svg>
+            </div>
+            <div className="brand-name">AppraisalStudio</div>
+            <div className="loading-spinner">
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main app content - only show when auth is determined */}
+      {!authLoading && (
+        <>
+          {/* Enhanced background effects */}
+          <div className="background-effects">
+            <div className="gradient-orb gradient-orb-1"></div>
+            <div className="gradient-orb gradient-orb-2"></div>
+            <div className="gradient-orb gradient-orb-3"></div>
+          </div>
 
       {/* Advanced notification system */}
       {notification && (
@@ -1806,6 +1854,8 @@ function App() {
           userProfile={userProfile}
           showNotification={showNotification}
         />
+      )}
+        </>
       )}
     </div>
   );
