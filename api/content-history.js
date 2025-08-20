@@ -71,10 +71,11 @@ async function handleGetHistory(req, res) {
     // Build the query
     let query = db.collection('generations').where('userId', '==', userId);
 
+    // NOTE: Temporarily removing contentType filtering to avoid needing another index
     // Filter by content type if specified
-    if (contentType && contentType !== 'all') {
-      query = query.where('contentType', '==', contentType);
-    }
+    // if (contentType && contentType !== 'all') {
+    //   query = query.where('contentType', '==', contentType);
+    // }
 
     // Order by timestamp (most recent first)
     query = query.orderBy('timestamp', 'desc');
@@ -124,6 +125,12 @@ async function handleGetHistory(req, res) {
       };
     });
 
+    // Apply content type filter (client-side to avoid needing another index)
+    if (contentType && contentType !== 'all') {
+      history = history.filter(item => item.contentType === contentType);
+      console.log('🔍 After content type filter:', history.length, 'items for type:', contentType);
+    }
+
     // Apply search filter if provided
     if (search && search.trim()) {
       const searchTerm = search.trim().toLowerCase();
@@ -131,6 +138,7 @@ async function handleGetHistory(req, res) {
         item.content.toLowerCase().includes(searchTerm) ||
         item.propertyAddress.toLowerCase().includes(searchTerm)
       );
+      console.log('🔍 After search filter:', history.length, 'items');
     }
 
     return res.status(200).json({
