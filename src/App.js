@@ -74,6 +74,11 @@ function App() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historySearch, setHistorySearch] = useState('');
   const [historyContentType, setHistoryContentType] = useState('all');
+
+  // Recent Properties State
+  const [recentProperties, setRecentProperties] = useState([]);
+  const [recentPropertiesLoading, setRecentPropertiesLoading] = useState(false);
+  const [showRecentProperties, setShowRecentProperties] = useState(false);
   
   const headerRef = useRef(null);
   const formRef = useRef(null);
@@ -229,25 +234,51 @@ function App() {
       if (userDropdownOpen && !event.target.closest('.user-nav')) {
         setUserDropdownOpen(false);
       }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [userDropdownOpen]);
-
-  // Load content history from existing "generations" collection
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (userDropdownOpen && !event.target.closest('.user-nav')) {
-        setUserDropdownOpen(false);
+      if (showRecentProperties && !event.target.closest('.recent-properties-section')) {
+        setShowRecentProperties(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [userDropdownOpen]);
+  }, [userDropdownOpen, showRecentProperties]);
 
-  // Close dropdown when clicking outside
+  // Load recent properties when user signs in or navigates to generator
+  useEffect(() => {
+    if (user && currentSection === 'home') {
+      loadRecentProperties();
+    }
+  }, [user, currentSection]);
+
+  // Load recent properties from API
+  const loadRecentProperties = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      setRecentPropertiesLoading(true);
+      const params = new URLSearchParams({
+        userId: user.uid,
+        limit: '10'
+      });
+      
+      const response = await fetch(`/api/recent-properties?${params}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setRecentProperties(data.recentProperties || []);
+      } else {
+        console.error('Failed to load recent properties:', data.error);
+        setRecentProperties([]);
+      }
+    } catch (error) {
+      console.error('Error loading recent properties:', error);
+      setRecentProperties([]);
+    } finally {
+      setRecentPropertiesLoading(false);
+    }
+  }, [user]);
+
+  // Load content history from existing "generations" collection
   const loadContentHistory = useCallback(async () => {
     if (!user) return;
     
@@ -290,6 +321,63 @@ function App() {
       loadContentHistory();
     }
   }, [user, currentSection, loadContentHistory]);
+
+  // Handle recent property selection
+  const handleRecentPropertySelect = (property) => {
+    setPropertyData({
+      address: property.address,
+      price: property.price,
+      bedrooms: property.bedrooms,
+      bathrooms: property.bathrooms,
+      sqft: property.sqft,
+      features: property.features,
+      propertyType: property.propertyType,
+      yearBuilt: property.yearBuilt,
+      parking: property.parking,
+      condition: property.condition,
+      lotSize: property.lotSize,
+      neighborhood: property.neighborhood,
+      schoolDistrict: property.schoolDistrict,
+      specialFeatures: property.specialFeatures
+    });
+    setShowRecentProperties(false);
+    showNotification(`Property details loaded for ${property.address}`, 'success', 3000);
+  };
+
+  // Clear form and start fresh
+  const handleClearForm = () => {
+    setPropertyData({
+      address: '',
+      price: '',
+      bedrooms: '',
+      bathrooms: '',
+      sqft: '',
+      features: '',
+      propertyType: 'Single Family Home',
+      yearBuilt: '',
+      parking: '',
+      condition: '',
+      lotSize: '',
+      neighborhood: '',
+      schoolDistrict: '',
+      specialFeatures: {
+        pool: false,
+        fireplace: false,
+        hardwoodFloors: false,
+        updatedKitchen: false,
+        masterSuite: false,
+        walkInCloset: false,
+        centralAir: false,
+        newAppliances: false,
+        fencedYard: false,
+        deck: false,
+        basement: false,
+        attic: false
+      }
+    });
+    setShowRecentProperties(false);
+    showNotification('Form cleared - ready for new property', 'info', 2000);
+  };
 
   // Enhanced Navigation handler with URL hash support
   const handleNavigation = (sectionId) => {
@@ -409,6 +497,9 @@ function App() {
         if (currentSection === 'history') {
           loadContentHistory();
         }
+
+        // Reload recent properties to include this new property
+        loadRecentProperties();
       } else if (trackResult.needsUpgrade) {
         setShowUpgradeModal(true);
         showNotification('Upgrade needed for more generations!', 'warning');
@@ -831,6 +922,106 @@ function App() {
                     </p>
                   </div>
                 </div>
+
+                {/* Recent Properties Section */}
+                {recentProperties.length > 0 && (
+                  <div className="recent-properties-section">
+                    <div className="recent-properties-header">
+                      <button 
+                        className="recent-properties-toggle"
+                        onClick={() => setShowRecentProperties(!showRecentProperties)}
+                      >
+                        <div className="toggle-icon-wrapper">
+                          <div className="toggle-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M12 20v-6M6 20V10M18 20V4"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="toggle-content">
+                          <span className="toggle-title">Recent Properties</span>
+                          <span className="toggle-subtitle">
+                            Quick access to properties you've used before
+                          </span>
+                        </div>
+                        <div className="toggle-badge">
+                          {recentProperties.length}
+                        </div>
+                        <div className={`toggle-arrow ${showRecentProperties ? 'rotated' : ''}`}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="6,9 12,15 18,9"></polyline>
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
+
+                    {showRecentProperties && (
+                      <div className="recent-properties-dropdown">
+                        {recentPropertiesLoading ? (
+                          <div className="recent-properties-loading">
+                            <div className="loading-spinner">
+                              <div className="spinner-ring"></div>
+                              <div className="spinner-ring"></div>
+                              <div className="spinner-ring"></div>
+                            </div>
+                            <span>Loading recent properties...</span>
+                          </div>
+                        ) : (
+                          <div className="recent-properties-list">
+                            {recentProperties.map((property) => (
+                              <button
+                                key={property.id}
+                                className="recent-property-item"
+                                onClick={() => handleRecentPropertySelect(property)}
+                              >
+                                <div className="property-icon">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9,22 9,12 15,12 15,22"/>
+                                  </svg>
+                                </div>
+                                <div className="property-details">
+                                  <div className="property-address">{property.address}</div>
+                                  <div className="property-meta">
+                                    {property.bedrooms && property.bathrooms && (
+                                      <span>{property.bedrooms}BR/{property.bathrooms}BA</span>
+                                    )}
+                                    {property.propertyType && (
+                                      <span>{property.propertyType}</span>
+                                    )}
+                                    {property.price && (
+                                      <span>${property.price}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="property-arrow">
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12h14"/>
+                                    <path d="M12 5l7 7-7 7"/>
+                                  </svg>
+                                </div>
+                              </button>
+                            ))}
+                            <button 
+                              className="clear-form-button"
+                              onClick={handleClearForm}
+                            >
+                              <div className="clear-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                  <polyline points="14,2 14,8 20,8"/>
+                                  <line x1="16" y1="13" x2="8" y2="13"/>
+                                  <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                              </div>
+                              <span>Clear Form - Start Fresh</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="form-grid">
                   <div className="input-group">
@@ -1861,7 +2052,7 @@ function App() {
   );
 }
 
-// AuthModal Component (same as before)
+// AuthModal Component
 const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   const { signIn, signUp, resetPassword, authLoading } = useFirebase();
   const [formData, setFormData] = useState({
@@ -2144,17 +2335,12 @@ const AuthModal = ({ mode, onClose, onSwitchMode, showNotification }) => {
   );
 };
 
-// UpgradeModal Component with Full Debugging
+// UpgradeModal Component
 const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
   const { user } = useFirebase();
   const [selectedPlan, setSelectedPlan] = useState('professional');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
-
-  // 🐛 DEBUG: Track selectedPlan state changes
-  useEffect(() => {
-    console.log('🎯 selectedPlan changed to:', selectedPlan);
-  }, [selectedPlan]);
 
   const plans = [
     {
@@ -2193,21 +2379,14 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
     }
   ];
 
-  // 🐛 DEBUG: Enhanced handleUpgrade with full debugging
   const handleUpgrade = async (planId) => {
-    console.log('🚀 handleUpgrade called with planId:', planId);
-    console.log('🎯 Current selectedPlan state:', selectedPlan);
-    console.log('👤 User object:', user ? { uid: user.uid, email: user.email } : 'No user');
-
     if (!user) {
-      console.log('❌ No user found, showing sign in prompt');
       showNotification('Please sign in first', 'error');
       return;
     }
 
     setIsProcessing(true);
     setError('');
-    console.log('⏳ Starting checkout process...');
 
     try {
       const requestData = {
@@ -2216,7 +2395,6 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
         userEmail: user.email,
         returnUrl: window.location.origin
       };
-      console.log('📤 Sending request to API:', requestData);
 
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -2226,59 +2404,38 @@ const UpgradeModal = ({ onClose, userProfile, showNotification }) => {
         body: JSON.stringify(requestData),
       });
 
-      console.log('📥 API Response status:', response.status);
-      console.log('📥 API Response headers:', Object.fromEntries(response.headers.entries()));
-
       const data = await response.json();
-      console.log('📄 API Response data:', data);
 
       if (!response.ok) {
-        console.log('❌ API Response not ok:', response.status, data);
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      console.log('✅ Checkout session created, redirecting to:', data.url);
       // Redirect to Stripe Checkout
       window.location.href = data.url;
       
     } catch (err) {
-      console.error('💥 Upgrade error details:', {
-        message: err.message,
-        stack: err.stack,
-        error: err
-      });
+      console.error('Upgrade error:', err);
       setError(err.message || 'Failed to start checkout process');
       showNotification('Upgrade failed. Please try again.', 'error');
     } finally {
       setIsProcessing(false);
-      console.log('🏁 handleUpgrade finished, processing set to false');
     }
   };
 
-  // 🐛 DEBUG: Card click handler with debugging
   const handleCardClick = (planId) => {
-    console.log('🖱️ Card clicked for plan:', planId);
-    console.log('🔄 Current selectedPlan before change:', selectedPlan);
     setSelectedPlan(planId);
-    console.log('✅ setSelectedPlan called with:', planId);
   };
 
-  // 🐛 DEBUG: Button click handler with automatic plan selection
   const handleButtonClick = async (e, planId) => {
     e.stopPropagation();
-    console.log('🔘 Button clicked for plan:', planId);
-    console.log('🎯 Current selectedPlan state at button click:', selectedPlan);
     
     // If clicking a different plan, select it first
     if (selectedPlan !== planId) {
-      console.log('🔄 Auto-selecting plan:', planId);
       setSelectedPlan(planId);
-      console.log('✅ Plan selection updated to:', planId);
       return; // Don't proceed to upgrade on first click
     }
     
     // If plan is already selected, proceed with upgrade
-    console.log('🎯 Plan already selected, proceeding with upgrade for:', planId);
     await handleUpgrade(planId);
   };
 
