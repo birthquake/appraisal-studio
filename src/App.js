@@ -297,11 +297,12 @@ function App() {
     setLocalMarket('');
   };
 
-  // Filter history
+  // FIXED: Filter history with proper data structure
   const filteredHistory = contentHistory.filter(item => {
-    const matchesSearch = item.address?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         item.agentName?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || item.propertyType === filterType;
+    const matchesSearch = item.propertyData?.address?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         item.propertyData?.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.content?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterType === 'all' || item.propertyData?.propertyType === filterType;
     return matchesSearch && matchesFilter;
   });
 
@@ -651,7 +652,7 @@ function App() {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search by address or agent..."
+                  placeholder="Search by address, content, or agent..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-input"
@@ -664,6 +665,10 @@ function App() {
                   className="filter-select"
                 >
                   <option value="all">All Types</option>
+                  <option value="Single Family Home">Single Family Home</option>
+                  <option value="Condo">Condo</option>
+                  <option value="Townhouse">Townhouse</option>
+                  <option value="Commercial">Commercial</option>
                   <option value="residential-sale">Residential Sale</option>
                   <option value="residential-rental">Residential Rental</option>
                   <option value="commercial-sale">Commercial Sale</option>
@@ -696,19 +701,19 @@ function App() {
                     <div key={item.id} className="history-item">
                       <div className="history-item-header">
                         <span className="content-type-badge">
-                          {item.propertyType?.replace('-', ' ') || 'Property'}
+                          {item.propertyData?.propertyType || item.contentType || 'Property'}
                         </span>
                         <span className="history-item-date">
                           {item.timestamp?.toDate?.()?.toLocaleDateString() || 'Recent'}
                         </span>
                       </div>
                       <div className="history-item-property">
-                        <h4>{item.address || 'Property Address'}</h4>
+                        <h4>{item.propertyData?.address || 'Property Address'}</h4>
                         <div className="property-meta">
-                          {item.bedrooms && <span>{item.bedrooms} bed</span>}
-                          {item.bathrooms && <span>{item.bathrooms} bath</span>}
-                          {item.squareFootage && <span>{item.squareFootage} sq ft</span>}
-                          {item.agentName && <span>{item.agentName}</span>}
+                          {item.propertyData?.bedrooms && <span>{item.propertyData.bedrooms} bed</span>}
+                          {item.propertyData?.bathrooms && <span>{item.propertyData.bathrooms} bath</span>}
+                          {item.propertyData?.sqft && <span>{item.propertyData.sqft} sq ft</span>}
+                          {item.propertyData?.price && <span>${item.propertyData.price}</span>}
                         </div>
                         <p>{item.content?.substring(0, 200)}...</p>
                       </div>
