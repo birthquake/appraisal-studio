@@ -11,7 +11,7 @@ function App() {
   const [currentView, setCurrentView] = useState('generator');
 
   // Form state
-  const [propertyType, setPropertyType] = useState('residential-sale');
+  const [propertyType, setPropertyType] = useState('Single Family Home');
   const [address, setAddress] = useState('');
   const [bedrooms, setBedrooms] = useState('');
   const [bathrooms, setBathrooms] = useState('');
@@ -25,9 +25,13 @@ function App() {
   const [agentEmail, setAgentEmail] = useState('');
   const [brokerageName, setBrokerageName] = useState('');
 
-  // UI state
+  // Content generation state
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingType, setGeneratingType] = useState('');
   const [generatedContent, setGeneratedContent] = useState('');
+  const [lastContentType, setLastContentType] = useState('');
+
+  // UI state
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [authError, setAuthError] = useState('');
@@ -38,13 +42,13 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
-  // Account state - NEW: using real account data structure
+  // Account state - Updated for 5 free generations for new users
   const [accountData, setAccountData] = useState({
-    accountType: 'Free Plan',
+    accountType: 'Free Trial',
     plan: 'free',
     usageCount: 0,
-    usageLimit: 1000,
-    remainingCredits: 1000,
+    usageLimit: 5,
+    remainingCredits: 5,
     subscriptionStatus: 'inactive',
     hasActiveSubscription: false
   });
@@ -57,6 +61,63 @@ function App() {
     'Deck', 'Patio', 'Fenced Yard', 'Two Car Garage', 'Basement', 'Attic', 'Laundry Room'
   ];
 
+  // Property type options
+  const propertyTypeOptions = [
+    'Single Family Home',
+    'Condo',
+    'Townhouse',
+    'Multi-Family',
+    'Duplex',
+    'Commercial Building',
+    'Office Space',
+    'Retail Space',
+    'Warehouse',
+    'Land',
+    'Mobile Home',
+    'Cooperative',
+    'Manufactured Home'
+  ];
+
+  // Content type options with descriptions
+  const contentTypes = [
+    {
+      key: 'description',
+      label: 'Property Description',
+      icon: '📝',
+      description: 'Detailed MLS listing description'
+    },
+    {
+      key: 'social_listing',
+      label: 'Social Media Post',
+      icon: '📱',
+      description: 'Engaging social media announcement'
+    },
+    {
+      key: 'email_alert',
+      label: 'Email Alert',
+      icon: '📧',
+      description: 'New listing email template'
+    },
+    {
+      key: 'marketing_flyer',
+      label: 'Marketing Flyer',
+      icon: '📄',
+      description: 'Print marketing content'
+    },
+    {
+      key: 'just_listed',
+      label: 'Just Listed',
+      icon: '🏠',
+      description: 'Quick announcement post'
+    },
+    {
+      key: 'open_house',
+      label: 'Open House',
+      icon: '🚪',
+      description: 'Open house invitation'
+    }
+  ];
+
   // Authentication effect
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -66,7 +127,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Account data effect - NEW: load real account data
+  // Account data effect
   useEffect(() => {
     if (user && currentView === 'account') {
       loadAccountData();
@@ -80,7 +141,7 @@ function App() {
     }
   }, [user, currentView]);
 
-  // NEW: Load real account data from API
+  // Load real account data from API
   const loadAccountData = async () => {
     if (!user) return;
     
@@ -158,7 +219,7 @@ function App() {
     }
   };
 
-  // NEW: Stripe integration functions
+  // Stripe integration functions
   const handleUpgrade = async (planId) => {
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
@@ -188,7 +249,7 @@ function App() {
         },
         body: JSON.stringify({
           userId: user.uid,
-          returnUrl: window.location.origin // Add return URL
+          returnUrl: window.location.origin
         }),
       });
 
@@ -198,7 +259,7 @@ function App() {
 
       const data = await response.json();
       
-      if (data.portalUrl) { // Changed from data.url to data.portalUrl
+      if (data.portalUrl) {
         window.location.href = data.portalUrl;
       } else {
         console.error('No portalUrl returned from customer portal API');
@@ -219,22 +280,27 @@ function App() {
     );
   };
 
-  // Form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  // Content generation - updated to handle different content types
+  const handleContentGeneration = async (contentType) => {
     if (!user) {
       setShowAuthModal(true);
       return;
     }
 
+    // Check required fields
+    if (!address || !listingPrice) {
+      alert('Please fill in at least the address and price to generate content.');
+      return;
+    }
+
     // Check usage limits for free users
     if (accountData.plan === 'free' && accountData.usageCount >= accountData.usageLimit) {
-      alert(`You've reached your generation limit. Upgrade to continue generating content.`);
+      alert(`You've used all ${accountData.usageLimit} free generations. Upgrade to continue creating content!`);
       return;
     }
 
     setIsGenerating(true);
+    setGeneratingType(contentType);
     setGeneratedContent('');
 
     try {
@@ -243,11 +309,14 @@ function App() {
         address,
         bedrooms,
         bathrooms,
-        squareFootage,
-        listingPrice,
-        propertyFeatures,
-        keyFeatures,
-        localMarket,
+        sqft: squareFootage,
+        price: listingPrice,
+        features: keyFeatures,
+        specialFeatures: propertyFeatures.reduce((acc, feature) => {
+          acc[feature.replace(/\s+/g, '').toLowerCase()] = true;
+          return acc;
+        }, {}),
+        neighborhood: localMarket,
         agentName,
         agentPhone,
         agentEmail,
@@ -260,7 +329,8 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...propertyData,
+          propertyData,
+          contentType,
           userId: user.uid
         }),
       });
@@ -271,6 +341,16 @@ function App() {
 
       const data = await response.json();
       setGeneratedContent(data.content);
+      setLastContentType(contentType);
+
+      // Save to Firebase
+      await addDoc(collection(db, 'generations'), {
+        userId: user.uid,
+        content: data.content,
+        contentType,
+        propertyData,
+        timestamp: new Date()
+      });
       
       // Refresh account data after generation
       if (currentView === 'account') {
@@ -282,11 +362,13 @@ function App() {
       alert('Error generating content. Please try again.');
     } finally {
       setIsGenerating(false);
+      setGeneratingType('');
     }
   };
 
-  // Clear form
+  // Clear form for new property
   const clearForm = () => {
+    setPropertyType('Single Family Home');
     setAddress('');
     setBedrooms('');
     setBathrooms('');
@@ -295,14 +377,22 @@ function App() {
     setPropertyFeatures([]);
     setKeyFeatures('');
     setLocalMarket('');
+    setAgentName('');
+    setAgentPhone('');
+    setAgentEmail('');
+    setBrokerageName('');
+    setGeneratedContent('');
+    setLastContentType('');
   };
 
-  // FIXED: Filter history with proper data structure
+  // Filter history
   const filteredHistory = contentHistory.filter(item => {
     const matchesSearch = item.propertyData?.address?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          item.propertyData?.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.content?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || item.propertyData?.propertyType === filterType;
+    const matchesFilter = filterType === 'all' || 
+                         item.contentType === filterType ||
+                         item.propertyData?.propertyType === filterType;
     return matchesSearch && matchesFilter;
   });
 
@@ -391,12 +481,176 @@ function App() {
       <main className="main-content">
         {currentView === 'generator' && (
           <div>
-            <div className="hero-section">
-              <h1 className="hero-title">AI-Powered Real Estate Content</h1>
-              <p className="hero-subtitle">Generate compelling property descriptions, marketing content, and listings in seconds</p>
-            </div>
+            {!user ? (
+              // Landing page for signed-out users
+              <div className="landing-page">
+                <div className="hero-section">
+                  <h1 className="hero-title">AI-Powered Real Estate Content Generation</h1>
+                  <p className="hero-subtitle">Create compelling property descriptions, social media posts, email alerts, and marketing content in seconds</p>
+                  
+                  <div className="hero-features">
+                    <div className="feature-grid">
+                      <div className="feature-item">
+                        <div className="feature-icon">📝</div>
+                        <h3>Professional Descriptions</h3>
+                        <p>Generate compelling MLS-ready property descriptions that highlight key features and selling points</p>
+                      </div>
+                      <div className="feature-item">
+                        <div className="feature-icon">📱</div>
+                        <h3>Social Media Content</h3>
+                        <p>Create engaging social media posts and announcements to promote your listings</p>
+                      </div>
+                      <div className="feature-item">
+                        <div className="feature-icon">📧</div>
+                        <h3>Email Marketing</h3>
+                        <p>Professional email alerts and marketing content to reach potential buyers</p>
+                      </div>
+                      <div className="feature-item">
+                        <div className="feature-icon">🏠</div>
+                        <h3>Multiple Formats</h3>
+                        <p>Generate content for flyers, open house invitations, and just listed announcements</p>
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="form-section">
+                  <div className="cta-section">
+                    <h2>Get Started with 5 Free Generations</h2>
+                    <p>Sign up now and create your first 5 pieces of content absolutely free</p>
+                    <div className="cta-buttons">
+                      <button 
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setShowAuthModal(true);
+                        }} 
+                        className="cta-button primary"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="8.5" cy="7" r="4"/>
+                          <line x1="20" y1="8" x2="20" y2="14"/>
+                          <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                        Start Free Trial
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setAuthMode('login');
+                          setShowAuthModal(true);
+                        }} 
+                        className="cta-button secondary"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                          <polyline points="10,17 15,12 10,7"/>
+                          <line x1="15" y1="12" x2="3" y2="12"/>
+                        </svg>
+                        Sign In
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pricing-preview">
+                    <h3>Choose Your Plan</h3>
+                    <div className="pricing-cards">
+                      <div className="pricing-card">
+                        <h4>Free Trial</h4>
+                        <div className="price">$0</div>
+                        <p>5 content generations to get started</p>
+                        <ul>
+                          <li>✓ All content types</li>
+                          <li>✓ Property descriptions</li>
+                          <li>✓ Social media posts</li>
+                          <li>✓ Email alerts</li>
+                        </ul>
+                      </div>
+                      <div className="pricing-card featured">
+                        <h4>Professional</h4>
+                        <div className="price">$49<span>/month</span></div>
+                        <p>Perfect for individual agents</p>
+                        <ul>
+                          <li>✓ Unlimited generations</li>
+                          <li>✓ All content types</li>
+                          <li>✓ Content history</li>
+                          <li>✓ Priority support</li>
+                        </ul>
+                      </div>
+                      <div className="pricing-card">
+                        <h4>Agency</h4>
+                        <div className="price">$99<span>/month</span></div>
+                        <p>For teams and agencies</p>
+                        <ul>
+                          <li>✓ Everything in Professional</li>
+                          <li>✓ Team collaboration</li>
+                          <li>✓ Advanced analytics</li>
+                          <li>✓ Custom templates</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Form for signed-in users
+              <div>
+                <div className="hero-section">
+                  <h1 className="hero-title">Generate Real Estate Content</h1>
+                  <p className="hero-subtitle">
+                    {accountData.plan === 'free' 
+                      ? `${accountData.remainingCredits} free generations remaining` 
+                      : 'Create unlimited content for your properties'
+                    }
+                  </p>
+                </div>
+
+                <div className="form-section">
+                  {accountData.plan === 'free' && accountData.usageCount >= accountData.usageLimit ? (
+                    // Upgrade prompt when free generations are exhausted
+                    <div className="upgrade-prompt">
+                      <div className="upgrade-card">
+                        <div className="upgrade-icon">
+                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                          </svg>
+                        </div>
+                        <h2>You've Used All Your Free Generations!</h2>
+                        <p>Great job exploring AppraisalStudio! You've used all 5 free content generations. Upgrade now to continue creating unlimited professional real estate content.</p>
+                        
+                        <div className="upgrade-options">
+                          <button 
+                            onClick={() => handleUpgrade('price_1RxaJb4F171I65zZX74WoXNK')}
+                            className="upgrade-button professional"
+                          >
+                            <div className="plan-header">
+                              <h3>Professional Plan</h3>
+                              <div className="plan-price">$49/month</div>
+                            </div>
+                            <div className="plan-features">
+                              <p>✓ Unlimited content generation</p>
+                              <p>✓ All 6 content types</p>
+                              <p>✓ Content history & search</p>
+                            </div>
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
+                            className="upgrade-button agency"
+                          >
+                            <div className="plan-header">
+                              <h3>Agency Plan</h3>
+                              <div className="plan-price">$99/month</div>
+                            </div>
+                            <div className="plan-features">
+                              <p>✓ Everything in Professional</p>
+                              <p>✓ Team collaboration features</p>
+                              <p>✓ Advanced analytics</p>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Regular form for users with remaining generations
               <div className="form-card">
                 <div className="form-header">
                   <div className="form-icon">
@@ -411,7 +665,7 @@ function App() {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="form-grid">
+                <div className="form-grid">
                   <div className="input-group required">
                     <label htmlFor="propertyType">Property Type</label>
                     <select 
@@ -421,10 +675,9 @@ function App() {
                       onChange={(e) => setPropertyType(e.target.value)}
                       required
                     >
-                      <option value="residential-sale">Residential Sale</option>
-                      <option value="residential-rental">Residential Rental</option>
-                      <option value="commercial-sale">Commercial Sale</option>
-                      <option value="commercial-lease">Commercial Lease</option>
+                      {propertyTypeOptions.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -483,16 +736,14 @@ function App() {
                       />
                     </div>
                     <div className="input-group">
-                      <label htmlFor="listingPrice">
-                        {propertyType.includes('rental') ? 'Monthly Rent' : 'Listing Price'}
-                      </label>
+                      <label htmlFor="listingPrice">Price</label>
                       <input
                         type="number"
                         id="listingPrice"
                         className="enhanced-input"
                         value={listingPrice}
                         onChange={(e) => setListingPrice(e.target.value)}
-                        placeholder={propertyType.includes('rental') ? '2500' : '450000'}
+                        placeholder="450000"
                         min="0"
                       />
                     </div>
@@ -594,30 +845,63 @@ function App() {
                     </div>
                   </div>
 
-                  <button type="submit" disabled={isGenerating} className="generate-button">
-                    {isGenerating ? (
-                      <>
-                        <div className="loading-spinner small"></div>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 11H1L4 14L1 17H9A10 10 0 0 0 9 11Z"/>
-                          <path d="M20 12C20 7.588 16.411 4 12 4"/>
+                  <div className="form-actions">
+                    <div className="action-buttons-header">
+                      <h3>Generate Content</h3>
+                      <p>Choose the type of content you'd like to create for this property</p>
+                    </div>
+                    
+                    <div className="content-type-buttons">
+                      {contentTypes.map((type) => (
+                        <button
+                          key={type.key}
+                          type="button"
+                          onClick={() => handleContentGeneration(type.key)}
+                          disabled={isGenerating}
+                          className={`content-type-button ${isGenerating && generatingType === type.key ? 'generating' : ''}`}
+                        >
+                          <div className="button-icon">{type.icon}</div>
+                          <div className="button-content">
+                            <div className="button-label">{type.label}</div>
+                            <div className="button-description">{type.description}</div>
+                          </div>
+                          {isGenerating && generatingType === type.key && (
+                            <div className="loading-spinner small"></div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="form-controls">
+                      <button 
+                        type="button" 
+                        onClick={clearForm}
+                        className="clear-form-button"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18"/>
+                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
                         </svg>
-                        Generate Content
-                      </>
-                    )}
-                  </button>
-                </form>
+                        Clear Form
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {generatedContent && (
               <div className="result-section">
                 <div className="result-header">
-                  <h3>Generated Content</h3>
+                  <div className="result-title">
+                    <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
+                    {lastContentType && (
+                      <span className="content-type-badge">{lastContentType}</span>
+                    )}
+                  </div>
                   <button 
                     onClick={() => navigator.clipboard.writeText(generatedContent)}
                     className="copy-button"
@@ -634,6 +918,7 @@ function App() {
                 </div>
               </div>
             )}
+          </div>
           </div>
         )}
 
@@ -665,14 +950,19 @@ function App() {
                   className="filter-select"
                 >
                   <option value="all">All Types</option>
-                  <option value="Single Family Home">Single Family Home</option>
-                  <option value="Condo">Condo</option>
-                  <option value="Townhouse">Townhouse</option>
-                  <option value="Commercial">Commercial</option>
-                  <option value="residential-sale">Residential Sale</option>
-                  <option value="residential-rental">Residential Rental</option>
-                  <option value="commercial-sale">Commercial Sale</option>
-                  <option value="commercial-lease">Commercial Lease</option>
+                  <optgroup label="Content Types">
+                    <option value="description">Property Descriptions</option>
+                    <option value="social_listing">Social Media Posts</option>
+                    <option value="email_alert">Email Alerts</option>
+                    <option value="marketing_flyer">Marketing Flyers</option>
+                    <option value="just_listed">Just Listed</option>
+                    <option value="open_house">Open House</option>
+                  </optgroup>
+                  <optgroup label="Property Types">
+                    {propertyTypeOptions.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -700,9 +990,14 @@ function App() {
                   {filteredHistory.map((item) => (
                     <div key={item.id} className="history-item">
                       <div className="history-item-header">
-                        <span className="content-type-badge">
-                          {item.propertyData?.propertyType || item.contentType || 'Property'}
-                        </span>
+                        <div className="content-badges">
+                          <span className="content-type-badge">
+                            {contentTypes.find(type => type.key === item.contentType)?.label || item.contentType || 'Content'}
+                          </span>
+                          <span className="property-type-badge">
+                            {item.propertyData?.propertyType || 'Property'}
+                          </span>
+                        </div>
                         <span className="history-item-date">
                           {item.timestamp?.toDate?.()?.toLocaleDateString() || 'Recent'}
                         </span>
@@ -798,7 +1093,6 @@ function App() {
                     )}
                   </div>
                   
-                  {/* Account Actions */}
                   <div className="quick-actions" style={{marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--gray-200)'}}>
                     {accountData.hasActiveSubscription ? (
                       <button onClick={handleManageSubscription} className="action-btn primary">
@@ -856,14 +1150,14 @@ function App() {
                     </div>
                   </div>
                   
-                  {accountData.plan === 'free' && accountData.usageCount >= accountData.usageLimit * 0.8 && (
+                  {accountData.plan === 'free' && accountData.usageCount >= accountData.usageLimit * 0.6 && (
                     <div className="usage-warning">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                       </svg>
-                      You're approaching your generation limit. Consider upgrading for unlimited access.
+                      You're running low on free generations. Upgrade for unlimited access!
                     </div>
                   )}
                 </div>
