@@ -188,6 +188,7 @@ function App() {
         },
         body: JSON.stringify({
           userId: user.uid,
+          returnUrl: window.location.origin // Add return URL
         }),
       });
 
@@ -197,10 +198,10 @@ function App() {
 
       const data = await response.json();
       
-      if (data.url) {
-        window.location.href = data.url;
+      if (data.portalUrl) { // Changed from data.url to data.portalUrl
+        window.location.href = data.portalUrl;
       } else {
-        console.error('No URL returned from customer portal API');
+        console.error('No portalUrl returned from customer portal API');
         alert('Unable to access customer portal. Please try again.');
       }
     } catch (error) {
