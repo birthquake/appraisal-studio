@@ -42,14 +42,14 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
-  // Account state - Updated for 5 free generations for new users
+  // Account state - Updated for 5 free generations for new users with active status
   const [accountData, setAccountData] = useState({
     accountType: 'Free Trial',
     plan: 'free',
     usageCount: 0,
     usageLimit: 5,
     remainingCredits: 5,
-    subscriptionStatus: 'inactive',
+    subscriptionStatus: 'active',
     hasActiveSubscription: false
   });
   const [accountLoading, setAccountLoading] = useState(false);
@@ -219,8 +219,13 @@ function App() {
     }
   };
 
-  // Stripe integration functions
+  // Fixed Stripe integration functions
   const handleUpgrade = async (planId) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     try {
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -233,10 +238,21 @@ function App() {
         }),
       });
 
-      const { url } = await response.json();
-      window.location.href = url;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error('No checkout URL returned from API');
+        alert('Unable to start checkout. Please try again.');
+      }
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      alert('Error starting checkout. Please try again.');
     }
   };
 
@@ -411,7 +427,7 @@ function App() {
         <div className="header-content">
           <div className="header-left">
             <div className="logo">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
                 <polyline points="9,22 9,12 15,12 15,22"/>
               </svg>
@@ -420,22 +436,22 @@ function App() {
           </div>
           <div className="header-right">
             <nav className="nav-menu">
-              <button 
-                className={currentView === 'generator' ? 'nav-button active' : 'nav-button'}
-                onClick={() => setCurrentView('generator')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
-                </svg>
-                <span>Generate</span>
-              </button>
               {user && (
                 <>
+                  <button 
+                    className={currentView === 'generator' ? 'nav-button active' : 'nav-button'}
+                    onClick={() => setCurrentView('generator')}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                    <span>Generate</span>
+                  </button>
                   <button 
                     className={currentView === 'history' ? 'nav-button active' : 'nav-button'}
                     onClick={() => setCurrentView('history')}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M3 3v5h5"/>
                       <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>
                       <path d="M12 7v5l4 2"/>
@@ -446,7 +462,7 @@ function App() {
                     className={currentView === 'account' ? 'nav-button active' : 'nav-button'}
                     onClick={() => setCurrentView('account')}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                       <circle cx="12" cy="7" r="4"/>
                     </svg>
@@ -457,21 +473,21 @@ function App() {
             </nav>
             {user ? (
               <button onClick={handleLogout} className="sign-out-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                   <polyline points="16,17 21,12 16,7"/>
                   <line x1="21" y1="12" x2="9" y2="12"/>
                 </svg>
-                Logout
+                <span>Logout</span>
               </button>
             ) : (
               <button onClick={() => setShowAuthModal(true)} className="sign-in-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                   <polyline points="10,17 15,12 10,7"/>
                   <line x1="15" y1="12" x2="3" y2="12"/>
                 </svg>
-                Sign In
+                <span>Sign In</span>
               </button>
             )}
           </div>
@@ -482,112 +498,272 @@ function App() {
         {currentView === 'generator' && (
           <div>
             {!user ? (
-              // Landing page for signed-out users
+              // Clean, minimalist landing page for signed-out users
               <div className="landing-page">
-                <div className="hero-section">
-                  <h1 className="hero-title">AI-Powered Real Estate Content Generation</h1>
-                  <p className="hero-subtitle">Create compelling property descriptions, social media posts, email alerts, and marketing content in seconds</p>
-                  
-                  <div className="hero-features">
-                    <div className="feature-grid">
-                      <div className="feature-item">
-                        <div className="feature-icon">📝</div>
-                        <h3>Professional Descriptions</h3>
-                        <p>Generate compelling MLS-ready property descriptions that highlight key features and selling points</p>
-                      </div>
-                      <div className="feature-item">
-                        <div className="feature-icon">📱</div>
-                        <h3>Social Media Content</h3>
-                        <p>Create engaging social media posts and announcements to promote your listings</p>
-                      </div>
-                      <div className="feature-item">
-                        <div className="feature-icon">📧</div>
-                        <h3>Email Marketing</h3>
-                        <p>Professional email alerts and marketing content to reach potential buyers</p>
-                      </div>
-                      <div className="feature-item">
-                        <div className="feature-icon">🏠</div>
-                        <h3>Multiple Formats</h3>
-                        <p>Generate content for flyers, open house invitations, and just listed announcements</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="cta-section">
-                    <h2>Get Started with 5 Free Generations</h2>
-                    <p>Sign up now and create your first 5 pieces of content absolutely free</p>
-                    <div className="cta-buttons">
+                <section className="hero">
+                  <div className="hero-content">
+                    <h1 className="hero-title">AI-Powered Real Estate Content</h1>
+                    <p className="hero-subtitle">Generate professional property descriptions, social media posts, and marketing content in seconds</p>
+                    
+                    <div className="hero-actions">
                       <button 
                         onClick={() => {
                           setAuthMode('signup');
                           setShowAuthModal(true);
                         }} 
-                        className="cta-button primary"
+                        className="cta-primary"
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                           <circle cx="8.5" cy="7" r="4"/>
                           <line x1="20" y1="8" x2="20" y2="14"/>
                           <line x1="23" y1="11" x2="17" y2="11"/>
                         </svg>
-                        Start Free Trial
+                        <span>Start Free Trial</span>
                       </button>
                       <button 
                         onClick={() => {
                           setAuthMode('login');
                           setShowAuthModal(true);
                         }} 
-                        className="cta-button secondary"
+                        className="cta-secondary"
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                          <polyline points="10,17 15,12 10,7"/>
-                          <line x1="15" y1="12" x2="3" y2="12"/>
+                        <span>Sign In</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M5 12h14"/>
+                          <path d="M12 5l7 7-7 7"/>
                         </svg>
-                        Sign In
+                      </button>
+                    </div>
+
+                    <div className="hero-badge">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <circle cx="12" cy="12" r="10"/>
+                      </svg>
+                      <span>5 free generations included</span>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="features">
+                  <div className="features-header">
+                    <h2>Everything you need to market properties</h2>
+                    <p>Generate multiple types of content for every listing</p>
+                  </div>
+                  
+                  <div className="features-grid">
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14,2 14,8 20,8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                      </div>
+                      <h3>Property Descriptions</h3>
+                      <p>MLS-ready descriptions that highlight key features and selling points</p>
+                    </div>
+
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect width="20" height="16" x="2" y="4" rx="2"/>
+                          <path d="M6 8l6 5 6-5"/>
+                        </svg>
+                      </div>
+                      <h3>Email Marketing</h3>
+                      <p>Professional email alerts and templates to reach potential buyers</p>
+                    </div>
+
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                      </div>
+                      <h3>Marketing Flyers</h3>
+                      <p>Print-ready content for flyers and promotional materials</p>
+                    </div>
+
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                        </svg>
+                      </div>
+                      <h3>Social Media</h3>
+                      <p>Engaging posts and announcements for social platforms</p>
+                    </div>
+
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
+                          <polyline points="9,22 9,12 15,12 15,22"/>
+                        </svg>
+                      </div>
+                      <h3>Open House</h3>
+                      <p>Invitations and announcements for open house events</p>
+                    </div>
+
+                    <div className="feature-card">
+                      <div className="feature-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </div>
+                      <h3>Just Listed</h3>
+                      <p>Quick announcement posts for new listings</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="pricing">
+                  <div className="pricing-header">
+                    <h2>Simple, transparent pricing</h2>
+                    <p>Start free, upgrade when you need more</p>
+                  </div>
+
+                  <div className="pricing-grid">
+                    <div className="pricing-card">
+                      <div className="plan-header">
+                        <h3>Free Trial</h3>
+                        <div className="price">
+                          <span className="currency">$</span>
+                          <span className="amount">0</span>
+                        </div>
+                        <p className="plan-description">Get started with 5 free generations</p>
+                      </div>
+                      <ul className="plan-features">
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>5 content generations</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>All content types</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Content history</span>
+                        </li>
+                      </ul>
+                      <button 
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setShowAuthModal(true);
+                        }}
+                        className="plan-button secondary"
+                      >
+                        <span>Start Free</span>
+                      </button>
+                    </div>
+
+                    <div className="pricing-card featured">
+                      <div className="plan-badge">Most Popular</div>
+                      <div className="plan-header">
+                        <h3>Professional</h3>
+                        <div className="price">
+                          <span className="currency">$</span>
+                          <span className="amount">49</span>
+                          <span className="period">/month</span>
+                        </div>
+                        <p className="plan-description">Perfect for individual agents</p>
+                      </div>
+                      <ul className="plan-features">
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Unlimited generations</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>All content types</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Content history & search</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Priority support</span>
+                        </li>
+                      </ul>
+                      <button 
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setShowAuthModal(true);
+                        }}
+                        className="plan-button primary"
+                      >
+                        <span>Get Started</span>
+                      </button>
+                    </div>
+
+                    <div className="pricing-card">
+                      <div className="plan-header">
+                        <h3>Agency</h3>
+                        <div className="price">
+                          <span className="currency">$</span>
+                          <span className="amount">99</span>
+                          <span className="period">/month</span>
+                        </div>
+                        <p className="plan-description">For teams and agencies</p>
+                      </div>
+                      <ul className="plan-features">
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Everything in Professional</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Team collaboration</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Advanced analytics</span>
+                        </li>
+                        <li>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                          <span>Custom templates</span>
+                        </li>
+                      </ul>
+                      <button 
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setShowAuthModal(true);
+                        }}
+                        className="plan-button secondary"
+                      >
+                        <span>Get Started</span>
                       </button>
                     </div>
                   </div>
-
-                  <div className="pricing-preview">
-                    <h3>Choose Your Plan</h3>
-                    <div className="pricing-cards">
-                      <div className="pricing-card">
-                        <h4>Free Trial</h4>
-                        <div className="price">$0</div>
-                        <p>5 content generations to get started</p>
-                        <ul>
-                          <li>✓ All content types</li>
-                          <li>✓ Property descriptions</li>
-                          <li>✓ Social media posts</li>
-                          <li>✓ Email alerts</li>
-                        </ul>
-                      </div>
-                      <div className="pricing-card featured">
-                        <h4>Professional</h4>
-                        <div className="price">$49<span>/month</span></div>
-                        <p>Perfect for individual agents</p>
-                        <ul>
-                          <li>✓ Unlimited generations</li>
-                          <li>✓ All content types</li>
-                          <li>✓ Content history</li>
-                          <li>✓ Priority support</li>
-                        </ul>
-                      </div>
-                      <div className="pricing-card">
-                        <h4>Agency</h4>
-                        <div className="price">$99<span>/month</span></div>
-                        <p>For teams and agencies</p>
-                        <ul>
-                          <li>✓ Everything in Professional</li>
-                          <li>✓ Team collaboration</li>
-                          <li>✓ Advanced analytics</li>
-                          <li>✓ Custom templates</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                </section>
               </div>
             ) : (
               // Form for signed-in users
@@ -884,7 +1060,7 @@ function App() {
                                 <line x1="10" y1="11" x2="10" y2="17"/>
                                 <line x1="14" y1="11" x2="14" y2="17"/>
                               </svg>
-                              Clear Form
+                              <span>Clear Form</span>
                             </button>
                           </div>
                         </div>
@@ -906,11 +1082,11 @@ function App() {
                         onClick={() => navigator.clipboard.writeText(generatedContent)}
                         className="copy-button"
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
                           <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                         </svg>
-                        Copy
+                        <span>Copy</span>
                       </button>
                     </div>
                     <div className="result-content">
@@ -932,7 +1108,7 @@ function App() {
 
             <div className="history-controls">
               <div className="search-box">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="m21 21-4.35-4.35"/>
                 </svg>
@@ -976,7 +1152,7 @@ function App() {
                 </div>
               ) : filteredHistory.length === 0 ? (
                 <div className="empty-state">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14,2 14,8 20,8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -1022,7 +1198,7 @@ function App() {
                             <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
                             <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                           </svg>
-                          Copy
+                          <span>Copy</span>
                         </button>
                       </div>
                     </div>
@@ -1049,7 +1225,7 @@ function App() {
               <div className="account-grid">
                 <div className="account-card">
                   <div className="card-header">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                       <circle cx="12" cy="7" r="4"/>
                     </svg>
@@ -1066,8 +1242,8 @@ function App() {
                     </div>
                     <div className="info-item">
                       <span className="info-label">Status</span>
-                      <span className={`info-value ${accountData.subscriptionStatus}`}>
-                        {accountData.subscriptionStatus}
+                      <span className={`info-value ${accountData.subscriptionStatus === 'active' ? 'active' : accountData.subscriptionStatus}`}>
+                        active
                       </span>
                     </div>
                     
@@ -1101,7 +1277,7 @@ function App() {
                           <circle cx="12" cy="12" r="3"/>
                           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                         </svg>
-                        Manage Subscription
+                        <span>Manage Subscription</span>
                       </button>
                     ) : (
                       <>
@@ -1112,7 +1288,7 @@ function App() {
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
                           </svg>
-                          Professional - $49/mo
+                          <span>Professional - $49/mo</span>
                         </button>
                         <button 
                           onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
@@ -1121,7 +1297,7 @@ function App() {
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
                           </svg>
-                          Agency - $99/mo
+                          <span>Agency - $99/mo</span>
                         </button>
                       </>
                     )}
@@ -1130,7 +1306,7 @@ function App() {
 
                 <div className="account-card">
                   <div className="card-header">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <line x1="12" y1="1" x2="12" y2="23"/>
                       <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
@@ -1158,7 +1334,7 @@ function App() {
                         <line x1="12" y1="9" x2="12" y2="13"/>
                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                       </svg>
-                      You're running low on free generations. Upgrade for unlimited access!
+                      <span>You're running low on free generations. Upgrade for unlimited access!</span>
                     </div>
                   )}
                 </div>
@@ -1172,7 +1348,7 @@ function App() {
             <h2>Welcome to AppraisalStudio</h2>
             <p>Please log in to access your account and content history.</p>
             <button onClick={() => setShowAuthModal(true)} className="cta-button">
-              Sign In
+              <span>Sign In</span>
             </button>
           </div>
         )}
@@ -1187,7 +1363,10 @@ function App() {
                 onClick={() => setShowAuthModal(false)} 
                 className="modal-close"
               >
-                ✕
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
             
@@ -1233,7 +1412,7 @@ function AuthForm({ mode, onSubmit, error }) {
             <line x1="15" y1="9" x2="9" y2="15"/>
             <line x1="9" y1="9" x2="15" y2="15"/>
           </svg>
-          {error}
+          <span>{error}</span>
         </div>
       )}
       
@@ -1260,7 +1439,7 @@ function AuthForm({ mode, onSubmit, error }) {
       </div>
       
       <button type="submit" className="auth-submit-btn">
-        {mode === 'login' ? 'Sign In' : 'Create Account'}
+        <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
       </button>
     </form>
   );
