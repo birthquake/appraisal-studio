@@ -1,32 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
+import { auth, db } from './firebase/config';
 import './App.css';
-
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDL4KU8MeNf85-wdJZfMKhrzD-pywCJrBo",
-  authDomain: "appraisalstudio-8b5fd.firebaseapp.com",
-  projectId: "appraisalstudio-8b5fd",
-  storageBucket: "appraisalstudio-8b5fd.firebasestorage.app",
-  messagingSenderId: "533936802264",
-  appId: "1:533936802264:web:8b02c80da3dc4c0bb3577c"
-};
-
-// Initialize Firebase (prevent duplicate initialization)
-let app;
-try {
-  app = initializeApp(firebaseConfig);
-} catch (error) {
-  if (error.code === 'app/duplicate-app') {
-    app = getApps()[0]; // Use existing app
-  } else {
-    throw error;
-  }
-}
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 function App() {
   // Core state
