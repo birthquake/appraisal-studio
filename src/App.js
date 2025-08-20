@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import './App.css';
@@ -14,8 +14,17 @@ const firebaseConfig = {
   appId: "1:533936802264:web:8b02c80da3dc4c0bb3577c"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (prevent duplicate initialization)
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+} catch (error) {
+  if (error.code === 'app/duplicate-app') {
+    app = getApps()[0]; // Use existing app
+  } else {
+    throw error;
+  }
+}
 const auth = getAuth(app);
 const db = getFirestore(app);
 
