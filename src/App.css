@@ -1538,6 +1538,43 @@ textarea.enhanced-input {
   border-color: var(--gray-400);
 }
 
+/* Account Dashboard - Additional Styles */
+.billing-info {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--gray-200);
+}
+
+.cancel-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: #fef3cd;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-md);
+  color: #92400e;
+  font-size: var(--font-size-sm);
+}
+
+.cancel-notice svg {
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.upgrade-btn.primary {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, #9333ea 100%);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.upgrade-btn.primary:hover {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .header-content {
