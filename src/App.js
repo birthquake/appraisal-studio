@@ -587,7 +587,6 @@ function App() {
                       </div>
                     </div>
                   </div>
-                  
                 </div>
               </div>
             ) : (
@@ -651,274 +650,276 @@ function App() {
                     </div>
                   ) : (
                     // Regular form for users with remaining generations
-              <div className="form-card">
-                <div className="form-header">
-                  <div className="form-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
-                      <polyline points="9,22 9,12 15,12 15,22"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h2>Property Information</h2>
-                    <p>Enter the details about the property to generate tailored content</p>
-                  </div>
+                    <div className="form-card">
+                      <div className="form-header">
+                        <div className="form-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
+                            <polyline points="9,22 9,12 15,12 15,22"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <h2>Property Information</h2>
+                          <p>Enter the details about the property to generate tailored content</p>
+                        </div>
+                      </div>
+
+                      <div className="form-grid">
+                        <div className="input-group required">
+                          <label htmlFor="propertyType">Property Type</label>
+                          <select 
+                            id="propertyType"
+                            className="enhanced-input"
+                            value={propertyType} 
+                            onChange={(e) => setPropertyType(e.target.value)}
+                            required
+                          >
+                            {propertyTypeOptions.map(type => (
+                              <option key={type} value={type}>{type}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="input-group required">
+                          <label htmlFor="address">Property Address</label>
+                          <input
+                            type="text"
+                            id="address"
+                            className="enhanced-input"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="123 Main St, City, State"
+                            required
+                          />
+                        </div>
+
+                        <div className="input-row">
+                          <div className="input-group">
+                            <label htmlFor="bedrooms">Bedrooms</label>
+                            <input
+                              type="number"
+                              id="bedrooms"
+                              className="enhanced-input"
+                              value={bedrooms}
+                              onChange={(e) => setBedrooms(e.target.value)}
+                              placeholder="3"
+                              min="0"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label htmlFor="bathrooms">Bathrooms</label>
+                            <input
+                              type="number"
+                              id="bathrooms"
+                              className="enhanced-input"
+                              value={bathrooms}
+                              onChange={(e) => setBathrooms(e.target.value)}
+                              placeholder="2.5"
+                              min="0"
+                              step="0.5"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="input-row">
+                          <div className="input-group">
+                            <label htmlFor="squareFootage">Square Footage</label>
+                            <input
+                              type="number"
+                              id="squareFootage"
+                              className="enhanced-input"
+                              value={squareFootage}
+                              onChange={(e) => setSquareFootage(e.target.value)}
+                              placeholder="2000"
+                              min="0"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label htmlFor="listingPrice">Price</label>
+                            <input
+                              type="number"
+                              id="listingPrice"
+                              className="enhanced-input"
+                              value={listingPrice}
+                              onChange={(e) => setListingPrice(e.target.value)}
+                              placeholder="450000"
+                              min="0"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="special-features">
+                          <label className="section-label">Special Features</label>
+                          <div className="checkbox-grid">
+                            {availableFeatures.map((feature) => (
+                              <div key={feature} className="checkbox-item">
+                                <input
+                                  type="checkbox"
+                                  id={feature}
+                                  checked={propertyFeatures.includes(feature)}
+                                  onChange={() => handleFeatureToggle(feature)}
+                                />
+                                <label htmlFor={feature} className="checkbox-label">{feature}</label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="optional-fields">
+                          <div className="input-group">
+                            <label htmlFor="keyFeatures">Key Features & Highlights</label>
+                            <textarea
+                              id="keyFeatures"
+                              className="enhanced-input"
+                              value={keyFeatures}
+                              onChange={(e) => setKeyFeatures(e.target.value)}
+                              placeholder="Recently renovated, great schools, quiet neighborhood..."
+                              rows="3"
+                            />
+                          </div>
+
+                          <div className="input-group">
+                            <label htmlFor="localMarket">Local Market Information</label>
+                            <textarea
+                              id="localMarket"
+                              className="enhanced-input"
+                              value={localMarket}
+                              onChange={(e) => setLocalMarket(e.target.value)}
+                              placeholder="Market trends, neighborhood info, nearby amenities..."
+                              rows="3"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="agent-fields">
+                          <label className="section-label">Agent Information</label>
+                          <div className="input-row">
+                            <div className="input-group">
+                              <label htmlFor="agentName">Agent Name</label>
+                              <input
+                                type="text"
+                                id="agentName"
+                                className="enhanced-input"
+                                value={agentName}
+                                onChange={(e) => setAgentName(e.target.value)}
+                                placeholder="John Doe"
+                              />
+                            </div>
+                            <div className="input-group">
+                              <label htmlFor="agentPhone">Phone</label>
+                              <input
+                                type="tel"
+                                id="agentPhone"
+                                className="enhanced-input"
+                                value={agentPhone}
+                                onChange={(e) => setAgentPhone(e.target.value)}
+                                placeholder="(555) 123-4567"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="input-row">
+                            <div className="input-group">
+                              <label htmlFor="agentEmail">Email</label>
+                              <input
+                                type="email"
+                                id="agentEmail"
+                                className="enhanced-input"
+                                value={agentEmail}
+                                onChange={(e) => setAgentEmail(e.target.value)}
+                                placeholder="john@realty.com"
+                              />
+                            </div>
+                            <div className="input-group">
+                              <label htmlFor="brokerageName">Brokerage</label>
+                              <input
+                                type="text"
+                                id="brokerageName"
+                                className="enhanced-input"
+                                value={brokerageName}
+                                onChange={(e) => setBrokerageName(e.target.value)}
+                                placeholder="ABC Realty"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="form-actions">
+                          <div className="action-buttons-header">
+                            <h3>Generate Content</h3>
+                            <p>Choose the type of content you'd like to create for this property</p>
+                          </div>
+                          
+                          <div className="content-type-buttons">
+                            {contentTypes.map((type) => (
+                              <button
+                                key={type.key}
+                                type="button"
+                                onClick={() => handleContentGeneration(type.key)}
+                                disabled={isGenerating}
+                                className={`content-type-button ${isGenerating && generatingType === type.key ? 'generating' : ''}`}
+                              >
+                                <div className="button-icon">{type.icon}</div>
+                                <div className="button-content">
+                                  <div className="button-label">{type.label}</div>
+                                  <div className="button-description">{type.description}</div>
+                                </div>
+                                {isGenerating && generatingType === type.key && (
+                                  <div className="loading-spinner small"></div>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <div className="form-controls">
+                            <button 
+                              type="button" 
+                              onClick={clearForm}
+                              className="clear-form-button"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M3 6h18"/>
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                              </svg>
+                              Clear Form
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="form-grid">
-                  <div className="input-group required">
-                    <label htmlFor="propertyType">Property Type</label>
-                    <select 
-                      id="propertyType"
-                      className="enhanced-input"
-                      value={propertyType} 
-                      onChange={(e) => setPropertyType(e.target.value)}
-                      required
-                    >
-                      {propertyTypeOptions.map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="input-group required">
-                    <label htmlFor="address">Property Address</label>
-                    <input
-                      type="text"
-                      id="address"
-                      className="enhanced-input"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="123 Main St, City, State"
-                      required
-                    />
-                  </div>
-
-                  <div className="input-row">
-                    <div className="input-group">
-                      <label htmlFor="bedrooms">Bedrooms</label>
-                      <input
-                        type="number"
-                        id="bedrooms"
-                        className="enhanced-input"
-                        value={bedrooms}
-                        onChange={(e) => setBedrooms(e.target.value)}
-                        placeholder="3"
-                        min="0"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label htmlFor="bathrooms">Bathrooms</label>
-                      <input
-                        type="number"
-                        id="bathrooms"
-                        className="enhanced-input"
-                        value={bathrooms}
-                        onChange={(e) => setBathrooms(e.target.value)}
-                        placeholder="2.5"
-                        min="0"
-                        step="0.5"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="input-row">
-                    <div className="input-group">
-                      <label htmlFor="squareFootage">Square Footage</label>
-                      <input
-                        type="number"
-                        id="squareFootage"
-                        className="enhanced-input"
-                        value={squareFootage}
-                        onChange={(e) => setSquareFootage(e.target.value)}
-                        placeholder="2000"
-                        min="0"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label htmlFor="listingPrice">Price</label>
-                      <input
-                        type="number"
-                        id="listingPrice"
-                        className="enhanced-input"
-                        value={listingPrice}
-                        onChange={(e) => setListingPrice(e.target.value)}
-                        placeholder="450000"
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="special-features">
-                    <label className="section-label">Special Features</label>
-                    <div className="checkbox-grid">
-                      {availableFeatures.map((feature) => (
-                        <div key={feature} className="checkbox-item">
-                          <input
-                            type="checkbox"
-                            id={feature}
-                            checked={propertyFeatures.includes(feature)}
-                            onChange={() => handleFeatureToggle(feature)}
-                          />
-                          <label htmlFor={feature} className="checkbox-label">{feature}</label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="optional-fields">
-                    <div className="input-group">
-                      <label htmlFor="keyFeatures">Key Features & Highlights</label>
-                      <textarea
-                        id="keyFeatures"
-                        className="enhanced-input"
-                        value={keyFeatures}
-                        onChange={(e) => setKeyFeatures(e.target.value)}
-                        placeholder="Recently renovated, great schools, quiet neighborhood..."
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="input-group">
-                      <label htmlFor="localMarket">Local Market Information</label>
-                      <textarea
-                        id="localMarket"
-                        className="enhanced-input"
-                        value={localMarket}
-                        onChange={(e) => setLocalMarket(e.target.value)}
-                        placeholder="Market trends, neighborhood info, nearby amenities..."
-                        rows="3"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="agent-fields">
-                    <label className="section-label">Agent Information</label>
-                    <div className="input-row">
-                      <div className="input-group">
-                        <label htmlFor="agentName">Agent Name</label>
-                        <input
-                          type="text"
-                          id="agentName"
-                          className="enhanced-input"
-                          value={agentName}
-                          onChange={(e) => setAgentName(e.target.value)}
-                          placeholder="John Doe"
-                        />
+                {generatedContent && (
+                  <div className="result-section">
+                    <div className="result-header">
+                      <div className="result-title">
+                        <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
+                        {lastContentType && (
+                          <span className="content-type-badge">{lastContentType}</span>
+                        )}
                       </div>
-                      <div className="input-group">
-                        <label htmlFor="agentPhone">Phone</label>
-                        <input
-                          type="tel"
-                          id="agentPhone"
-                          className="enhanced-input"
-                          value={agentPhone}
-                          onChange={(e) => setAgentPhone(e.target.value)}
-                          placeholder="(555) 123-4567"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="input-row">
-                      <div className="input-group">
-                        <label htmlFor="agentEmail">Email</label>
-                        <input
-                          type="email"
-                          id="agentEmail"
-                          className="enhanced-input"
-                          value={agentEmail}
-                          onChange={(e) => setAgentEmail(e.target.value)}
-                          placeholder="john@realty.com"
-                        />
-                      </div>
-                      <div className="input-group">
-                        <label htmlFor="brokerageName">Brokerage</label>
-                        <input
-                          type="text"
-                          id="brokerageName"
-                          className="enhanced-input"
-                          value={brokerageName}
-                          onChange={(e) => setBrokerageName(e.target.value)}
-                          placeholder="ABC Realty"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-actions">
-                    <div className="action-buttons-header">
-                      <h3>Generate Content</h3>
-                      <p>Choose the type of content you'd like to create for this property</p>
-                    </div>
-                    
-                    <div className="content-type-buttons">
-                      {contentTypes.map((type) => (
-                        <button
-                          key={type.key}
-                          type="button"
-                          onClick={() => handleContentGeneration(type.key)}
-                          disabled={isGenerating}
-                          className={`content-type-button ${isGenerating && generatingType === type.key ? 'generating' : ''}`}
-                        >
-                          <div className="button-icon">{type.icon}</div>
-                          <div className="button-content">
-                            <div className="button-label">{type.label}</div>
-                            <div className="button-description">{type.description}</div>
-                          </div>
-                          {isGenerating && generatingType === type.key && (
-                            <div className="loading-spinner small"></div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <div className="form-controls">
                       <button 
-                        type="button" 
-                        onClick={clearForm}
-                        className="clear-form-button"
+                        onClick={() => navigator.clipboard.writeText(generatedContent)}
+                        className="copy-button"
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M3 6h18"/>
-                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                          <line x1="10" y1="11" x2="10" y2="17"/>
-                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
                         </svg>
-                        Clear Form
+                        Copy
                       </button>
                     </div>
+                    <div className="result-content">
+                      {generatedContent}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {generatedContent && (
-              <div className="result-section">
-                <div className="result-header">
-                  <div className="result-title">
-                    <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
-                    {lastContentType && (
-                      <span className="content-type-badge">{lastContentType}</span>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => navigator.clipboard.writeText(generatedContent)}
-                    className="copy-button"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
-                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
-                    </svg>
-                    Copy
-                  </button>
-                </div>
-                <div className="result-content">
-                  {generatedContent}
-                </div>
+                )}
               </div>
             )}
-          </div>
           </div>
         )}
 
