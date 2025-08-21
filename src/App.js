@@ -897,7 +897,7 @@ function App() {
                 border: '1px solid rgba(255,255,255,0.4)'
               }}>
                 <div className="hero-section">
-                  <h1 className="hero-title">Create Professional Property Content</h1>
+                  <h1 className="hero-title">Generate Content For Your Property</h1>
                 </div>
 
                 <div className="form-section">
