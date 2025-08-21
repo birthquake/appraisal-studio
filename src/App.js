@@ -499,57 +499,55 @@ function App() {
           <div>
             {!user ? (
               // Clean, minimalist landing page for signed-out users
-              <div className="landing-page">
-                <section className="hero">
-                  <div className="hero-content">
-                    <h1 className="hero-title">AI-Powered Real Estate Content</h1>
-                    <p className="hero-subtitle">Generate professional property descriptions, social media posts, and marketing content in seconds</p>
-                    
-                    <div className="hero-actions">
-                      <button 
-                        onClick={() => {
-                          setAuthMode('signup');
-                          setShowAuthModal(true);
-                        }} 
-                        className="cta-primary"
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                          <circle cx="8.5" cy="7" r="4"/>
-                          <line x1="20" y1="8" x2="20" y2="14"/>
-                          <line x1="23" y1="11" x2="17" y2="11"/>
-                        </svg>
-                        <span>Start Free Trial</span>
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setAuthMode('login');
-                          setShowAuthModal(true);
-                        }} 
-                        className="cta-secondary"
-                      >
-                        <span>Sign In</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M5 12h14"/>
-                          <path d="M12 5l7 7-7 7"/>
-                        </svg>
-                      </button>
-                    </div>
-
-                    <div className="hero-badge">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 12l2 2 4-4"/>
-                        <circle cx="12" cy="12" r="10"/>
+              <div>
+                <div className="hero-section">
+                  <h1 className="hero-title">AI-Powered Real Estate Content</h1>
+                  <p className="hero-subtitle">Generate professional property descriptions, social media posts, and marketing content in seconds</p>
+                  
+                  <div style={{display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', margin: '2rem 0'}}>
+                    <button 
+                      onClick={() => {
+                        setAuthMode('signup');
+                        setShowAuthModal(true);
+                      }} 
+                      className="cta-button"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
                       </svg>
-                      <span>5 free generations included</span>
-                    </div>
+                      <span>Start Free Trial</span>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setAuthMode('login');
+                        setShowAuthModal(true);
+                      }} 
+                      className="action-btn secondary"
+                    >
+                      <span>Sign In</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 12h14"/>
+                        <path d="M12 5l7 7-7 7"/>
+                      </svg>
+                    </button>
                   </div>
-                </section>
 
-                <section className="features">
-                  <div className="features-header">
-                    <h2>Everything you need to market properties</h2>
-                    <p>Generate multiple types of content for every listing</p>
+                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem'}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 12l2 2 4-4"/>
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <span style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>5 free generations included</span>
+                  </div>
+                </div>
+
+                <div className="features-section">
+                  <div style={{textAlign: 'center', marginBottom: '3rem'}}>
+                    <h2 style={{fontSize: '2.25rem', fontWeight: '700', marginBottom: '1rem'}}>Everything you need to market properties</h2>
+                    <p style={{fontSize: '1.125rem', color: 'var(--gray-600)'}}>Generate multiple types of content for every listing</p>
                   </div>
                   
                   <div className="features-grid">
@@ -619,42 +617,42 @@ function App() {
                       <p>Quick announcement posts for new listings</p>
                     </div>
                   </div>
-                </section>
+                </div>
 
-                <section className="pricing">
-                  <div className="pricing-header">
-                    <h2>Simple, transparent pricing</h2>
-                    <p>Start free, upgrade when you need more</p>
+                <div style={{marginTop: '4rem'}}>
+                  <div style={{textAlign: 'center', marginBottom: '3rem'}}>
+                    <h2 style={{fontSize: '2.25rem', fontWeight: '700', marginBottom: '1rem'}}>Simple, transparent pricing</h2>
+                    <p style={{fontSize: '1.125rem', color: 'var(--gray-600)'}}>Start free, upgrade when you need more</p>
                   </div>
 
-                  <div className="pricing-grid">
-                    <div className="pricing-card">
-                      <div className="plan-header">
-                        <h3>Free Trial</h3>
-                        <div className="price">
-                          <span className="currency">$</span>
-                          <span className="amount">0</span>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', maxWidth: '900px', margin: '0 auto'}}>
+                    <div className="feature-card">
+                      <div style={{marginBottom: '1.5rem'}}>
+                        <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Free Trial</h3>
+                        <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'center', marginBottom: '0.5rem'}}>
+                          <span style={{fontSize: '0.875rem', color: 'var(--gray-500)'}}>$</span>
+                          <span style={{fontSize: '3rem', fontWeight: '700', color: 'var(--gray-900)'}}>0</span>
                         </div>
-                        <p className="plan-description">Get started with 5 free generations</p>
+                        <p style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>Get started with 5 free generations</p>
                       </div>
-                      <ul className="plan-features">
-                        <li>
+                      <ul style={{listStyle: 'none', padding: 0, marginBottom: '1.5rem'}}>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>5 content generations</span>
+                          <span style={{fontSize: '0.875rem'}}>5 content generations</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>All content types</span>
+                          <span style={{fontSize: '0.875rem'}}>All content types</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Content history</span>
+                          <span style={{fontSize: '0.875rem'}}>Content history</span>
                         </li>
                       </ul>
                       <button 
@@ -662,47 +660,48 @@ function App() {
                           setAuthMode('signup');
                           setShowAuthModal(true);
                         }}
-                        className="plan-button secondary"
+                        className="action-btn secondary"
+                        style={{width: '100%'}}
                       >
                         <span>Start Free</span>
                       </button>
                     </div>
 
-                    <div className="pricing-card featured">
-                      <div className="plan-badge">Most Popular</div>
-                      <div className="plan-header">
-                        <h3>Professional</h3>
-                        <div className="price">
-                          <span className="currency">$</span>
-                          <span className="amount">49</span>
-                          <span className="period">/month</span>
+                    <div className="feature-card" style={{border: '2px solid var(--primary-500)', position: 'relative'}}>
+                      <div style={{position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-500)', color: 'white', padding: '0.25rem 1rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: '600'}}>Most Popular</div>
+                      <div style={{marginBottom: '1.5rem'}}>
+                        <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Professional</h3>
+                        <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'center', marginBottom: '0.5rem'}}>
+                          <span style={{fontSize: '0.875rem', color: 'var(--gray-500)'}}>$</span>
+                          <span style={{fontSize: '3rem', fontWeight: '700', color: 'var(--gray-900)'}}>49</span>
+                          <span style={{fontSize: '0.875rem', color: 'var(--gray-500)', marginLeft: '0.25rem'}}>/month</span>
                         </div>
-                        <p className="plan-description">Perfect for individual agents</p>
+                        <p style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>Perfect for individual agents</p>
                       </div>
-                      <ul className="plan-features">
-                        <li>
+                      <ul style={{listStyle: 'none', padding: 0, marginBottom: '1.5rem'}}>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Unlimited generations</span>
+                          <span style={{fontSize: '0.875rem'}}>Unlimited generations</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>All content types</span>
+                          <span style={{fontSize: '0.875rem'}}>All content types</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Content history & search</span>
+                          <span style={{fontSize: '0.875rem'}}>Content history & search</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Priority support</span>
+                          <span style={{fontSize: '0.875rem'}}>Priority support</span>
                         </li>
                       </ul>
                       <button 
@@ -710,46 +709,47 @@ function App() {
                           setAuthMode('signup');
                           setShowAuthModal(true);
                         }}
-                        className="plan-button primary"
+                        className="cta-button"
+                        style={{width: '100%'}}
                       >
                         <span>Get Started</span>
                       </button>
                     </div>
 
-                    <div className="pricing-card">
-                      <div className="plan-header">
-                        <h3>Agency</h3>
-                        <div className="price">
-                          <span className="currency">$</span>
-                          <span className="amount">99</span>
-                          <span className="period">/month</span>
+                    <div className="feature-card">
+                      <div style={{marginBottom: '1.5rem'}}>
+                        <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Agency</h3>
+                        <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'center', marginBottom: '0.5rem'}}>
+                          <span style={{fontSize: '0.875rem', color: 'var(--gray-500)'}}>$</span>
+                          <span style={{fontSize: '3rem', fontWeight: '700', color: 'var(--gray-900)'}}>99</span>
+                          <span style={{fontSize: '0.875rem', color: 'var(--gray-500)', marginLeft: '0.25rem'}}>/month</span>
                         </div>
-                        <p className="plan-description">For teams and agencies</p>
+                        <p style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>For teams and agencies</p>
                       </div>
-                      <ul className="plan-features">
-                        <li>
+                      <ul style={{listStyle: 'none', padding: 0, marginBottom: '1.5rem'}}>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Everything in Professional</span>
+                          <span style={{fontSize: '0.875rem'}}>Everything in Professional</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Team collaboration</span>
+                          <span style={{fontSize: '0.875rem'}}>Team collaboration</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Advanced analytics</span>
+                          <span style={{fontSize: '0.875rem'}}>Advanced analytics</span>
                         </li>
-                        <li>
+                        <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span>Custom templates</span>
+                          <span style={{fontSize: '0.875rem'}}>Custom templates</span>
                         </li>
                       </ul>
                       <button 
@@ -757,13 +757,14 @@ function App() {
                           setAuthMode('signup');
                           setShowAuthModal(true);
                         }}
-                        className="plan-button secondary"
+                        className="action-btn secondary"
+                        style={{width: '100%'}}
                       >
                         <span>Get Started</span>
                       </button>
                     </div>
                   </div>
-                </section>
+                </div>
               </div>
             ) : (
               // Form for signed-in users
@@ -781,47 +782,29 @@ function App() {
                 <div className="form-section">
                   {accountData.plan === 'free' && accountData.usageCount >= accountData.usageLimit ? (
                     // Upgrade prompt when free generations are exhausted
-                    <div className="upgrade-prompt">
-                      <div className="upgrade-card">
-                        <div className="upgrade-icon">
-                          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
-                          </svg>
-                        </div>
-                        <h2>You've Used All Your Free Generations!</h2>
-                        <p>Great job exploring AppraisalStudio! You've used all 5 free content generations. Upgrade now to continue creating unlimited professional real estate content.</p>
+                    <div className="upgrade-content">
+                      <div className="upgrade-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+                        </svg>
+                      </div>
+                      <h2>You've Used All Your Free Generations!</h2>
+                      <p>Great job exploring AppraisalStudio! You've used all 5 free content generations. Upgrade now to continue creating unlimited professional real estate content.</p>
+                      
+                      <div className="upgrade-actions">
+                        <button 
+                          onClick={() => handleUpgrade('price_1RxaJb4F171I65zZX74WoXNK')}
+                          className="upgrade-btn primary"
+                        >
+                          <span>Professional - $49/month</span>
+                        </button>
                         
-                        <div className="upgrade-options">
-                          <button 
-                            onClick={() => handleUpgrade('price_1RxaJb4F171I65zZX74WoXNK')}
-                            className="upgrade-button professional"
-                          >
-                            <div className="plan-header">
-                              <h3>Professional Plan</h3>
-                              <div className="plan-price">$49/month</div>
-                            </div>
-                            <div className="plan-features">
-                              <p>✓ Unlimited content generation</p>
-                              <p>✓ All 6 content types</p>
-                              <p>✓ Content history & search</p>
-                            </div>
-                          </button>
-                          
-                          <button 
-                            onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
-                            className="upgrade-button agency"
-                          >
-                            <div className="plan-header">
-                              <h3>Agency Plan</h3>
-                              <div className="plan-price">$99/month</div>
-                            </div>
-                            <div className="plan-features">
-                              <p>✓ Everything in Professional</p>
-                              <p>✓ Team collaboration features</p>
-                              <p>✓ Advanced analytics</p>
-                            </div>
-                          </button>
-                        </div>
+                        <button 
+                          onClick={() => handleUpgrade('price_1RxaKC4F171I65zZmhLiCcZF')}
+                          className="upgrade-btn primary"
+                        >
+                          <span>Agency - $99/month</span>
+                        </button>
                       </div>
                     </div>
                   ) : (
@@ -1020,34 +1003,35 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="form-actions">
-                          <div className="action-buttons-header">
-                            <h3>Generate Content</h3>
-                            <p>Choose the type of content you'd like to create for this property</p>
+                        <div>
+                          <div style={{marginBottom: '1.5rem'}}>
+                            <h3 style={{fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem'}}>Generate Content</h3>
+                            <p style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>Choose the type of content you'd like to create for this property</p>
                           </div>
                           
-                          <div className="content-type-buttons">
+                          <div className="content-type-grid">
                             {contentTypes.map((type) => (
                               <button
                                 key={type.key}
                                 type="button"
                                 onClick={() => handleContentGeneration(type.key)}
                                 disabled={isGenerating}
-                                className={`content-type-button ${isGenerating && generatingType === type.key ? 'generating' : ''}`}
+                                className="content-type-option"
+                                style={{position: 'relative'}}
                               >
-                                <div className="button-icon">{type.icon}</div>
-                                <div className="button-content">
-                                  <div className="button-label">{type.label}</div>
-                                  <div className="button-description">{type.description}</div>
+                                <div className="content-type-icon" style={{fontSize: '1.5rem'}}>{type.icon}</div>
+                                <div>
+                                  <div className="content-type-label" style={{fontSize: '0.875rem', fontWeight: '600'}}>{type.label}</div>
+                                  <div style={{fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.25rem'}}>{type.description}</div>
                                 </div>
                                 {isGenerating && generatingType === type.key && (
-                                  <div className="loading-spinner small"></div>
+                                  <div className="loading-spinner small" style={{position: 'absolute', right: '1rem'}}></div>
                                 )}
                               </button>
                             ))}
                           </div>
                           
-                          <div className="form-controls">
+                          <div style={{marginTop: '1.5rem'}}>
                             <button 
                               type="button" 
                               onClick={clearForm}
@@ -1072,12 +1056,7 @@ function App() {
                 {generatedContent && (
                   <div className="result-section">
                     <div className="result-header">
-                      <div className="result-title">
-                        <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
-                        {lastContentType && (
-                          <span className="content-type-badge">{lastContentType}</span>
-                        )}
-                      </div>
+                      <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
                       <button 
                         onClick={() => navigator.clipboard.writeText(generatedContent)}
                         className="copy-button"
@@ -1167,11 +1146,11 @@ function App() {
                   {filteredHistory.map((item) => (
                     <div key={item.id} className="history-item">
                       <div className="history-item-header">
-                        <div className="content-badges">
+                        <div style={{display: 'flex', gap: '0.5rem'}}>
                           <span className="content-type-badge">
                             {contentTypes.find(type => type.key === item.contentType)?.label || item.contentType || 'Content'}
                           </span>
-                          <span className="property-type-badge">
+                          <span className="content-type-badge" style={{backgroundColor: 'var(--gray-100)', color: 'var(--gray-700)'}}>
                             {item.propertyData?.propertyType || 'Property'}
                           </span>
                         </div>
@@ -1242,7 +1221,7 @@ function App() {
                     </div>
                     <div className="info-item">
                       <span className="info-label">Status</span>
-                      <span className={`info-value ${accountData.subscriptionStatus === 'active' ? 'active' : accountData.subscriptionStatus}`}>
+                      <span className="info-value active">
                         active
                       </span>
                     </div>
