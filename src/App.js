@@ -78,76 +78,82 @@ function App() {
     'Manufactured Home'
   ];
 
-  // Content type options with descriptions
+  // Content type options with descriptions and colors
   const contentTypes = [
     {
       key: 'description',
       label: 'Property Description',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14,2 14,8 20,8"/>
           <line x1="16" y1="13" x2="8" y2="13"/>
           <line x1="16" y1="17" x2="8" y2="17"/>
         </svg>
       ),
-      description: 'Detailed MLS listing description'
+      color: 'linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%)',
+      textColor: '#0277bd'
     },
     {
       key: 'social_listing',
       label: 'Social Media Post',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
         </svg>
       ),
-      description: 'Engaging social media announcement'
+      color: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)',
+      textColor: '#7b1fa2'
     },
     {
       key: 'email_alert',
       label: 'Email Alert',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect width="20" height="16" x="2" y="4" rx="2"/>
           <path d="M6 8l6 5 6-5"/>
         </svg>
       ),
-      description: 'New listing email template'
+      color: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)',
+      textColor: '#388e3c'
     },
     {
       key: 'marketing_flyer',
       label: 'Marketing Flyer',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
           <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
         </svg>
       ),
-      description: 'Print marketing content'
+      color: 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)',
+      textColor: '#f57c00'
     },
     {
       key: 'just_listed',
       label: 'Just Listed',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
           <polyline points="9,22 9,12 15,12 15,22"/>
         </svg>
       ),
-      description: 'Quick announcement post'
+      color: 'linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%)',
+      textColor: '#00838f'
     },
     {
       key: 'open_house',
       label: 'Open House',
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M14 6l-2-6L0 6v9l12 4 12-4V6z"/>
           <path d="M12 22v-9"/>
           <path d="M6 15v4"/>
           <path d="M18 15v4"/>
         </svg>
       ),
-      description: 'Open house invitation'
+      color: 'linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%)',
+      textColor: '#c2185b'
     }
   ];
 
@@ -531,19 +537,19 @@ function App() {
       </header>
 
       <main className="main-content" style={{
-        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 20%, #f8fafc 60%, #f0f4f8 100%)',
         minHeight: '100vh',
         position: 'relative'
       }}>
-        {/* Subtle geometric pattern overlay */}
+        {/* Subtle geometric pattern overlay with warm tones */}
         <div style={{
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          opacity: 0.03,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          opacity: 0.05,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23475569' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           pointerEvents: 'none',
           zIndex: 0
         }} />
@@ -553,12 +559,12 @@ function App() {
             {!user ? (
               // Clean, minimalist landing page for signed-out users - leading with value
               <div style={{
-                background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 40%, rgba(241,245,249,0.9) 100%)',
                 borderRadius: '1.5rem',
                 padding: '3rem 2rem',
-                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
+                boxShadow: '0 20px 40px -10px rgba(71, 85, 105, 0.15)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)'
+                border: '1px solid rgba(255,255,255,0.3)'
               }}>
                 <div className="features-section">
                   <div style={{textAlign: 'center', marginBottom: '3rem'}}>
@@ -568,10 +574,10 @@ function App() {
                   
                   <div className="features-grid">
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -586,10 +592,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -602,10 +608,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -618,10 +624,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -633,10 +639,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -649,10 +655,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -679,10 +685,10 @@ function App() {
                     margin: '0 auto'
                   }}>
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div style={{marginBottom: '1.5rem'}}>
                         <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Free Trial</h3>
@@ -727,9 +733,9 @@ function App() {
                     <div className="feature-card" style={{
                       border: '2px solid var(--primary-500)', 
                       position: 'relative',
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
-                      boxShadow: '0 15px 35px -5px rgba(14, 165, 233, 0.15)',
-                      backdropFilter: 'blur(10px)'
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 40%, rgba(241,245,249,0.9) 100%)',
+                      boxShadow: '0 15px 35px -5px rgba(14, 165, 233, 0.2)',
+                      backdropFilter: 'blur(15px)'
                     }}>
                       <div style={{position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-500)', color: 'white', padding: '0.25rem 1rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: '600'}}>Most Popular</div>
                       <div style={{marginBottom: '1.5rem'}}>
@@ -780,10 +786,10 @@ function App() {
                     </div>
 
                     <div className="feature-card" style={{
-                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
-                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.9) 40%, rgba(241,245,249,0.85) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(71, 85, 105, 0.15)',
                       backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      border: '1px solid rgba(255,255,255,0.3)'
                     }}>
                       <div style={{marginBottom: '1.5rem'}}>
                         <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Agency</h3>
@@ -837,12 +843,12 @@ function App() {
             ) : (
               // Form for signed-in users
               <div style={{
-                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 40%, rgba(241,245,249,0.9) 100%)',
                 borderRadius: '1.5rem',
                 padding: '2rem',
-                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+                boxShadow: '0 20px 40px -10px rgba(71, 85, 105, 0.12)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.3)'
+                border: '1px solid rgba(255,255,255,0.4)'
               }}>
                 <div className="hero-section">
                   <h1 className="hero-title">Generate Real Estate Content</h1>
@@ -1092,15 +1098,47 @@ function App() {
                                 onClick={() => handleContentGeneration(type.key)}
                                 disabled={isGenerating}
                                 className="content-type-option"
-                                style={{position: 'relative'}}
+                                style={{
+                                  position: 'relative',
+                                  background: type.color,
+                                  border: `2px solid ${type.textColor}20`,
+                                  color: type.textColor,
+                                  minHeight: '80px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.75rem',
+                                  transition: 'all 0.2s ease',
+                                  transform: isGenerating && generatingType === type.key ? 'scale(0.98)' : 'scale(1)'
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isGenerating) {
+                                    e.target.style.transform = 'scale(1.02)';
+                                    e.target.style.boxShadow = `0 8px 25px -8px ${type.textColor}40`;
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isGenerating) {
+                                    e.target.style.transform = 'scale(1)';
+                                    e.target.style.boxShadow = '';
+                                  }
+                                }}
                               >
-                                <div className="content-type-icon" style={{fontSize: '1.5rem', color: 'var(--primary-600)'}}>{type.icon}</div>
-                                <div>
-                                  <div className="content-type-label" style={{fontSize: '0.875rem', fontWeight: '600'}}>{type.label}</div>
-                                  <div style={{fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.25rem'}}>{type.description}</div>
-                                </div>
+                                <div style={{color: type.textColor}}>{type.icon}</div>
+                                <div style={{
+                                  fontSize: '0.875rem', 
+                                  fontWeight: '600',
+                                  textAlign: 'center',
+                                  color: type.textColor
+                                }}>{type.label}</div>
                                 {isGenerating && generatingType === type.key && (
-                                  <div className="loading-spinner small" style={{position: 'absolute', right: '1rem'}}></div>
+                                  <div className="loading-spinner small" style={{
+                                    position: 'absolute', 
+                                    top: '0.5rem', 
+                                    right: '0.5rem',
+                                    borderTopColor: type.textColor
+                                  }}></div>
                                 )}
                               </button>
                             ))}
@@ -1155,12 +1193,12 @@ function App() {
 
         {currentView === 'history' && user && (
           <div className="history-section" style={{
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 40%, rgba(241,245,249,0.9) 100%)',
             borderRadius: '1.5rem',
             padding: '2rem',
-            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+            boxShadow: '0 20px 40px -10px rgba(71, 85, 105, 0.12)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.3)'
+            border: '1px solid rgba(255,255,255,0.4)'
           }}>
             <div className="history-header">
               <h1>Content History</h1>
@@ -1272,12 +1310,12 @@ function App() {
 
         {currentView === 'account' && user && (
           <div className="account-section" style={{
-            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 40%, rgba(241,245,249,0.9) 100%)',
             borderRadius: '1.5rem',
             padding: '2rem',
-            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+            boxShadow: '0 20px 40px -10px rgba(71, 85, 105, 0.12)',
             backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.3)'
+            border: '1px solid rgba(255,255,255,0.4)'
           }}>
             <div className="account-header">
               <h1>Account Dashboard</h1>
