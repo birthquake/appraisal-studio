@@ -167,12 +167,18 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Account data effect
+  // Account data effect - load when user signs in or view changes
+  useEffect(() => {
+    if (user) {
+      loadAccountData();
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user && currentView === 'account') {
       loadAccountData();
     }
-  }, [user, currentView]);
+  }, [currentView]);
 
   // History effect
   useEffect(() => {
@@ -412,10 +418,8 @@ function App() {
         timestamp: new Date()
       });
       
-      // Refresh account data after generation
-      if (currentView === 'account') {
-        loadAccountData();
-      }
+      // Refresh account data after generation to update remaining credits
+      loadAccountData();
       
     } catch (error) {
       console.error('Error generating content:', error);
@@ -1171,7 +1175,7 @@ function App() {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search by address, content, or agent..."
+                  placeholder="Search by address or content..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-input"
