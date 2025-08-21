@@ -83,37 +83,70 @@ function App() {
     {
       key: 'description',
       label: 'Property Description',
-      icon: '📝',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14,2 14,8 20,8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+      ),
       description: 'Detailed MLS listing description'
     },
     {
       key: 'social_listing',
       label: 'Social Media Post',
-      icon: '📱',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+        </svg>
+      ),
       description: 'Engaging social media announcement'
     },
     {
       key: 'email_alert',
       label: 'Email Alert',
-      icon: '📧',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect width="20" height="16" x="2" y="4" rx="2"/>
+          <path d="M6 8l6 5 6-5"/>
+        </svg>
+      ),
       description: 'New listing email template'
     },
     {
       key: 'marketing_flyer',
       label: 'Marketing Flyer',
-      icon: '📄',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      ),
       description: 'Print marketing content'
     },
     {
       key: 'just_listed',
       label: 'Just Listed',
-      icon: '🏠',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
+          <polyline points="9,22 9,12 15,12 15,22"/>
+        </svg>
+      ),
       description: 'Quick announcement post'
     },
     {
       key: 'open_house',
       label: 'Open House',
-      icon: '🚪',
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M14 6l-2-6L0 6v9l12 4 12-4V6z"/>
+          <path d="M12 22v-9"/>
+          <path d="M6 15v4"/>
+          <path d="M18 15v4"/>
+        </svg>
+      ),
       description: 'Open house invitation'
     }
   ];
@@ -481,7 +514,10 @@ function App() {
                 <span>Logout</span>
               </button>
             ) : (
-              <button onClick={() => setShowAuthModal(true)} className="sign-in-button">
+              <button onClick={() => {
+                setAuthMode('login');
+                setShowAuthModal(true);
+              }} className="sign-in-button">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                   <polyline points="10,17 15,12 10,7"/>
@@ -494,64 +530,49 @@ function App() {
         </div>
       </header>
 
-      <main className="main-content">
+      <main className="main-content" style={{
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+        minHeight: '100vh',
+        position: 'relative'
+      }}>
+        {/* Subtle geometric pattern overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 0.03,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          pointerEvents: 'none',
+          zIndex: 0
+        }} />
+        <div style={{position: 'relative', zIndex: 1}}>
         {currentView === 'generator' && (
           <div>
             {!user ? (
-              // Clean, minimalist landing page for signed-out users
-              <div>
-                <div className="hero-section">
-                  <h1 className="hero-title">AI-Powered Real Estate Content</h1>
-                  <p className="hero-subtitle">Generate professional property descriptions, social media posts, and marketing content in seconds</p>
-                  
-                  <div style={{display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', margin: '2rem 0'}}>
-                    <button 
-                      onClick={() => {
-                        setAuthMode('signup');
-                        setShowAuthModal(true);
-                      }} 
-                      className="cta-button"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="8.5" cy="7" r="4"/>
-                        <line x1="20" y1="8" x2="20" y2="14"/>
-                        <line x1="23" y1="11" x2="17" y2="11"/>
-                      </svg>
-                      <span>Start Free Trial</span>
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setAuthMode('login');
-                        setShowAuthModal(true);
-                      }} 
-                      className="action-btn secondary"
-                    >
-                      <span>Sign In</span>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M5 12h14"/>
-                        <path d="M12 5l7 7-7 7"/>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem'}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 12l2 2 4-4"/>
-                      <circle cx="12" cy="12" r="10"/>
-                    </svg>
-                    <span style={{color: 'var(--gray-600)', fontSize: '0.875rem'}}>5 free generations included</span>
-                  </div>
-                </div>
-
+              // Clean, minimalist landing page for signed-out users - leading with value
+              <div style={{
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                borderRadius: '1.5rem',
+                padding: '3rem 2rem',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}>
                 <div className="features-section">
                   <div style={{textAlign: 'center', marginBottom: '3rem'}}>
-                    <h2 style={{fontSize: '2.25rem', fontWeight: '700', marginBottom: '1rem'}}>Everything you need to market properties</h2>
-                    <p style={{fontSize: '1.125rem', color: 'var(--gray-600)'}}>Generate multiple types of content for every listing</p>
+                    <h1 style={{fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem', color: 'var(--gray-900)'}}>AI-Powered Real Estate Content</h1>
+                    <p style={{fontSize: '1.25rem', color: 'var(--gray-600)', maxWidth: '600px', margin: '0 auto 2rem'}}>Generate professional property descriptions, social media posts, and marketing content in seconds</p>
                   </div>
                   
                   <div className="features-grid">
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -564,7 +585,12 @@ function App() {
                       <p>MLS-ready descriptions that highlight key features and selling points</p>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect width="20" height="16" x="2" y="4" rx="2"/>
@@ -575,7 +601,12 @@ function App() {
                       <p>Professional email alerts and templates to reach potential buyers</p>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -586,7 +617,12 @@ function App() {
                       <p>Print-ready content for flyers and promotional materials</p>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
@@ -596,7 +632,12 @@ function App() {
                       <p>Engaging posts and announcements for social platforms</p>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"/>
@@ -607,7 +648,12 @@ function App() {
                       <p>Invitations and announcements for open house events</p>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div className="feature-icon">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -625,8 +671,19 @@ function App() {
                     <p style={{fontSize: '1.125rem', color: 'var(--gray-600)'}}>Start free, upgrade when you need more</p>
                   </div>
 
-                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', maxWidth: '900px', margin: '0 auto'}}>
-                    <div className="feature-card">
+                  <div style={{
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+                    gap: '2rem', 
+                    maxWidth: '1000px', 
+                    margin: '0 auto'
+                  }}>
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div style={{marginBottom: '1.5rem'}}>
                         <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Free Trial</h3>
                         <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'center', marginBottom: '0.5rem'}}>
@@ -667,7 +724,13 @@ function App() {
                       </button>
                     </div>
 
-                    <div className="feature-card" style={{border: '2px solid var(--primary-500)', position: 'relative'}}>
+                    <div className="feature-card" style={{
+                      border: '2px solid var(--primary-500)', 
+                      position: 'relative',
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                      boxShadow: '0 15px 35px -5px rgba(14, 165, 233, 0.15)',
+                      backdropFilter: 'blur(10px)'
+                    }}>
                       <div style={{position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--primary-500)', color: 'white', padding: '0.25rem 1rem', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: '600'}}>Most Popular</div>
                       <div style={{marginBottom: '1.5rem'}}>
                         <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Professional</h3>
@@ -716,7 +779,12 @@ function App() {
                       </button>
                     </div>
 
-                    <div className="feature-card">
+                    <div className="feature-card" style={{
+                      background: 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%)',
+                      boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255,255,255,0.2)'
+                    }}>
                       <div style={{marginBottom: '1.5rem'}}>
                         <h3 style={{fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.5rem'}}>Agency</h3>
                         <div style={{display: 'flex', alignItems: 'baseline', justifyContent: 'center', marginBottom: '0.5rem'}}>
@@ -768,7 +836,14 @@ function App() {
               </div>
             ) : (
               // Form for signed-in users
-              <div>
+              <div style={{
+                background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+                borderRadius: '1.5rem',
+                padding: '2rem',
+                boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.3)'
+              }}>
                 <div className="hero-section">
                   <h1 className="hero-title">Generate Real Estate Content</h1>
                   <p className="hero-subtitle">
@@ -1019,7 +1094,7 @@ function App() {
                                 className="content-type-option"
                                 style={{position: 'relative'}}
                               >
-                                <div className="content-type-icon" style={{fontSize: '1.5rem'}}>{type.icon}</div>
+                                <div className="content-type-icon" style={{fontSize: '1.5rem', color: 'var(--primary-600)'}}>{type.icon}</div>
                                 <div>
                                   <div className="content-type-label" style={{fontSize: '0.875rem', fontWeight: '600'}}>{type.label}</div>
                                   <div style={{fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '0.25rem'}}>{type.description}</div>
@@ -1079,7 +1154,14 @@ function App() {
         )}
 
         {currentView === 'history' && user && (
-          <div className="history-section">
+          <div className="history-section" style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.3)'
+          }}>
             <div className="history-header">
               <h1>Content History</h1>
               <p>View and manage your previously generated content</p>
@@ -1189,7 +1271,14 @@ function App() {
         )}
 
         {currentView === 'account' && user && (
-          <div className="account-section">
+          <div className="account-section" style={{
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.95) 100%)',
+            borderRadius: '1.5rem',
+            padding: '2rem',
+            boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.3)'
+          }}>
             <div className="account-header">
               <h1>Account Dashboard</h1>
               <p>Manage your subscription and view usage statistics</p>
@@ -1331,6 +1420,7 @@ function App() {
             </button>
           </div>
         )}
+        </div>
       </main>
 
       {showAuthModal && (
