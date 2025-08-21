@@ -20,11 +20,6 @@ function App() {
   const [propertyFeatures, setPropertyFeatures] = useState([]);
   const [keyFeatures, setKeyFeatures] = useState('');
   const [localMarket, setLocalMarket] = useState('');
-  // Expanded content state for history
-  const [expandedItems, setExpandedItems] = useState(new Set());
-
-  // Ref for auto-scrolling to generated content
-  const resultSectionRef = useRef(null);
 
   // Content generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -42,6 +37,12 @@ function App() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
+
+  // Expanded content state for history
+  const [expandedItems, setExpandedItems] = useState(new Set());
+
+  // Ref for auto-scrolling to generated content
+  const resultSectionRef = useRef(null);
 
   // Account state - Updated for 5 free generations for new users with active status
   const [accountData, setAccountData] = useState({
@@ -197,6 +198,12 @@ function App() {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('🔄 Account data loaded:', {
+          plan: data.plan,
+          usageCount: data.usageCount,
+          usageLimit: data.usageLimit,
+          remainingCredits: data.remainingCredits
+        });
         setAccountData(data);
       } else {
         console.error('Error loading account data:', response.statusText);
@@ -526,7 +533,30 @@ function App() {
               )}
             </nav>
             {user ? (
-              <button onClick={handleLogout} className="sign-out-button">
+              <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                {/* Usage counter */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  borderRadius: '0.5rem',
+                  color: 'white',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                  </svg>
+                  <span>
+                    {accountData.plan === 'free' 
+                      ? `${accountData.usageCount || 0}/${accountData.usageLimit || 5}` 
+                      : `${accountData.usageCount || 0} generated`
+                    }
+                  </span>
+                </div>
+                <button onClick={handleLogout} className="sign-out-button">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                   <polyline points="16,17 21,12 16,7"/>
@@ -534,6 +564,7 @@ function App() {
                 </svg>
                 <span>Logout</span>
               </button>
+              </div>
             ) : (
               <button onClick={() => {
                 setAuthMode('login');
@@ -767,7 +798,7 @@ function App() {
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span style={{fontSize: '0.875rem'}}>Unlimited generations</span>
+                          <span style={{fontSize: '0.875rem'}}>100 generations per month</span>
                         </li>
                         <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -820,7 +851,7 @@ function App() {
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
-                          <span style={{fontSize: '0.875rem'}}>Everything in Professional</span>
+                          <span style={{fontSize: '0.875rem'}}>Unlimited generations</span>
                         </li>
                         <li style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -866,13 +897,7 @@ function App() {
                 border: '1px solid rgba(255,255,255,0.4)'
               }}>
                 <div className="hero-section">
-                  <h1 className="hero-title">Generate Real Estate Content</h1>
-                  <p className="hero-subtitle">
-                    {accountData.plan === 'free' 
-                      ? `${accountData.remainingCredits} free generations remaining` 
-                      : 'Create unlimited content for your properties'
-                    }
-                  </p>
+                  <h1 className="hero-title">Create Professional Property Content</h1>
                 </div>
 
                 <div className="form-section">
@@ -1408,11 +1433,11 @@ function App() {
                       <div className="stat-label">Used</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">{accountData.usageLimit}</div>
+                      <div className="stat-number">{accountData.usageLimit === -1 ? '∞' : accountData.usageLimit}</div>
                       <div className="stat-label">Limit</div>
                     </div>
                     <div className="stat-item">
-                      <div className="stat-number">{accountData.remainingCredits}</div>
+                      <div className="stat-number">{accountData.usageLimit === -1 ? '∞' : accountData.remainingCredits}</div>
                       <div className="stat-label">Remaining</div>
                     </div>
                   </div>
