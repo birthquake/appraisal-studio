@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
 import { auth, db } from './firebase/config';
@@ -20,10 +20,11 @@ function App() {
   const [propertyFeatures, setPropertyFeatures] = useState([]);
   const [keyFeatures, setKeyFeatures] = useState('');
   const [localMarket, setLocalMarket] = useState('');
-  const [agentName, setAgentName] = useState('');
-  const [agentPhone, setAgentPhone] = useState('');
-  const [agentEmail, setAgentEmail] = useState('');
-  const [brokerageName, setBrokerageName] = useState('');
+  // Expanded content state for history
+  const [expandedItems, setExpandedItems] = useState(new Set());
+
+  // Ref for auto-scrolling to generated content
+  const resultSectionRef = useRef(null);
 
   // Content generation state
   const [isGenerating, setIsGenerating] = useState(false);
@@ -371,11 +372,7 @@ function App() {
           acc[feature.replace(/\s+/g, '').toLowerCase()] = true;
           return acc;
         }, {}),
-        neighborhood: localMarket,
-        agentName,
-        agentPhone,
-        agentEmail,
-        brokerageName
+        neighborhood: localMarket
       };
 
       const response = await fetch('/api/property', {
@@ -397,6 +394,14 @@ function App() {
       const data = await response.json();
       setGeneratedContent(data.content);
       setLastContentType(contentType);
+
+      // Auto-scroll to generated content
+      setTimeout(() => {
+        resultSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 100);
 
       // Save to Firebase
       await addDoc(collection(db, 'generations'), {
@@ -432,18 +437,24 @@ function App() {
     setPropertyFeatures([]);
     setKeyFeatures('');
     setLocalMarket('');
-    setAgentName('');
-    setAgentPhone('');
-    setAgentEmail('');
-    setBrokerageName('');
     setGeneratedContent('');
     setLastContentType('');
+  };
+
+  // Toggle expanded content in history
+  const toggleExpanded = (itemId) => {
+    const newExpanded = new Set(expandedItems);
+    if (newExpanded.has(itemId)) {
+      newExpanded.delete(itemId);
+    } else {
+      newExpanded.add(itemId);
+    }
+    setExpandedItems(newExpanded);
   };
 
   // Filter history
   const filteredHistory = contentHistory.filter(item => {
     const matchesSearch = item.propertyData?.address?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         item.propertyData?.agentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.content?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || 
                          item.contentType === filterType ||
@@ -1031,59 +1042,6 @@ function App() {
                           </div>
                         </div>
 
-                        <div className="agent-fields">
-                          <label className="section-label">Agent Information</label>
-                          <div className="input-row">
-                            <div className="input-group">
-                              <label htmlFor="agentName">Agent Name</label>
-                              <input
-                                type="text"
-                                id="agentName"
-                                className="enhanced-input"
-                                value={agentName}
-                                onChange={(e) => setAgentName(e.target.value)}
-                                placeholder="John Doe"
-                              />
-                            </div>
-                            <div className="input-group">
-                              <label htmlFor="agentPhone">Phone</label>
-                              <input
-                                type="tel"
-                                id="agentPhone"
-                                className="enhanced-input"
-                                value={agentPhone}
-                                onChange={(e) => setAgentPhone(e.target.value)}
-                                placeholder="(555) 123-4567"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="input-row">
-                            <div className="input-group">
-                              <label htmlFor="agentEmail">Email</label>
-                              <input
-                                type="email"
-                                id="agentEmail"
-                                className="enhanced-input"
-                                value={agentEmail}
-                                onChange={(e) => setAgentEmail(e.target.value)}
-                                placeholder="john@realty.com"
-                              />
-                            </div>
-                            <div className="input-group">
-                              <label htmlFor="brokerageName">Brokerage</label>
-                              <input
-                                type="text"
-                                id="brokerageName"
-                                className="enhanced-input"
-                                value={brokerageName}
-                                onChange={(e) => setBrokerageName(e.target.value)}
-                                placeholder="ABC Realty"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
                         <div>
                           <div style={{marginBottom: '1.5rem'}}>
                             <h3 style={{fontSize: '1.125rem', fontWeight: '600', marginBottom: '0.5rem'}}>Generate Content</h3>
@@ -1167,7 +1125,7 @@ function App() {
                 </div>
 
                 {generatedContent && (
-                  <div className="result-section">
+                  <div ref={resultSectionRef} className="result-section">
                     <div className="result-header">
                       <h3>Generated {contentTypes.find(type => type.key === lastContentType)?.label || 'Content'}</h3>
                       <button 
@@ -1286,7 +1244,29 @@ function App() {
                           {item.propertyData?.sqft && <span>{item.propertyData.sqft} sq ft</span>}
                           {item.propertyData?.price && <span>${item.propertyData.price}</span>}
                         </div>
-                        <p>{item.content?.substring(0, 200)}...</p>
+                        <p>
+                          {expandedItems.has(item.id) ? 
+                            item.content : 
+                            `${item.content?.substring(0, 150)}${item.content?.length > 150 ? '...' : ''}`
+                          }
+                        </p>
+                        {item.content?.length > 150 && (
+                          <button 
+                            onClick={() => toggleExpanded(item.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--primary-600)',
+                              cursor: 'pointer',
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              marginTop: '0.5rem',
+                              padding: 0
+                            }}
+                          >
+                            {expandedItems.has(item.id) ? 'Read Less' : 'Read More'}
+                          </button>
+                        )}
                       </div>
                       <div className="history-item-actions">
                         <button 
